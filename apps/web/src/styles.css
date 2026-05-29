@@ -25,12 +25,11 @@ body {
     linear-gradient(180deg, var(--bg-2), var(--bg-1));
   color: var(--text);
 }
-
-button { font: inherit; color: inherit; }
+button { font: inherit; color: inherit; cursor: pointer; }
 
 .app-shell {
   position: relative;
-  max-width: 540px;
+  max-width: 1120px;
   margin: 0 auto;
   padding: 20px 14px 40px;
 }
@@ -56,24 +55,48 @@ button { font: inherit; color: inherit; }
 
 .hero-card,
 .block-card,
-.details-card {
+.details-card,
+.project-strip,
+.module-card {
   border-radius: 24px;
   margin-bottom: 14px;
 }
 
 .hero-card {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 18px;
+  display: grid;
+  grid-template-columns: 1.7fr 0.9fr;
+  gap: 16px;
+  padding: 20px;
 }
 .hero-card h1 {
   margin: 6px 0 8px;
-  font-size: 28px;
-  line-height: 1.04;
+  font-size: clamp(28px, 5vw, 44px);
+  line-height: 1.02;
+  max-width: 11ch;
 }
+.hero-copy { display: grid; gap: 12px; }
+.hero-side { display: grid; gap: 10px; align-content: start; }
+.hero-metric {
+  border-radius: 18px;
+  padding: 14px;
+  display: grid;
+  gap: 4px;
+}
+.hero-metric strong { font-size: 28px; }
+.hero-metric span { color: var(--muted); font-size: 13px; }
+.hero-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
 .eyebrow { margin: 0; color: var(--cyan); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; }
 .muted { color: var(--muted); margin: 0; }
+
+.project-strip {
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.project-meta { display: flex; gap: 8px; flex-wrap: wrap; }
 
 .module-grid {
   display: grid;
@@ -81,23 +104,29 @@ button { font: inherit; color: inherit; }
   gap: 10px;
   margin-bottom: 14px;
 }
-.module-chip {
-  border-radius: 999px;
-  padding: 12px 14px;
-  border: 1px solid var(--glass-border);
-  background: rgba(255,255,255,0.08);
-  transition: transform 0.15s ease, border-color 0.15s ease;
+.module-card {
+  padding: 16px;
 }
-.module-chip:hover,
-.primary-btn:hover,
-.ghost-btn:hover { transform: translateY(-1px); }
-.module-chip:focus-visible,
-.primary-btn:focus-visible,
-.ghost-btn:focus-visible,
-summary:focus-visible {
-  outline: 2px solid rgba(103, 221, 255, 0.7);
-  outline-offset: 2px;
+.module-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
 }
+
+.workspace-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 0.9fr;
+  gap: 14px;
+}
+.lower-grid {
+  margin-top: 14px;
+  grid-template-columns: 1.1fr 1fr;
+}
+.workspace-main,
+.workspace-side,
+.outputs-card { height: 100%; }
 
 .block-card { padding: 16px; }
 .block-head {
@@ -107,6 +136,7 @@ summary:focus-visible {
   gap: 12px;
   margin-bottom: 14px;
 }
+.block-head.compact h2 { font-size: 18px; }
 .block-head h2 { margin: 0 0 4px; }
 
 .primary-btn,
@@ -124,21 +154,50 @@ summary:focus-visible {
 }
 .ghost-btn { background: rgba(255,255,255,0.06); }
 
+.primary-btn:hover,
+.ghost-btn:hover,
+.module-card:hover,
+.job-item:hover,
+.output-item:hover { transform: translateY(-1px); }
+.primary-btn:focus-visible,
+.ghost-btn:focus-visible,
+summary:focus-visible {
+  outline: 2px solid rgba(103, 221, 255, 0.7);
+  outline-offset: 2px;
+}
+
 .dropzone,
 .preview-panel,
-.log-box {
+.log-box,
+.stat-box,
+.output-item {
   border-radius: 18px;
   border: 1px dashed rgba(255,255,255,0.16);
   background: rgba(255,255,255,0.04);
 }
 .dropzone {
-  min-height: 120px;
+  min-height: 170px;
   display: grid;
   place-items: center;
   text-align: center;
   gap: 4px;
 }
 .dropzone small { color: var(--muted); }
+.quick-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.stat-stack { display: grid; gap: 10px; }
+.stat-box {
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.stat-box strong { font-size: 22px; }
 
 .job-list { display: grid; gap: 10px; }
 .job-item {
@@ -150,8 +209,20 @@ summary:focus-visible {
   border-radius: 18px;
   background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.08);
+  transition: transform 0.15s ease;
+}
+.job-title-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 .job-item p { margin-top: 4px; }
+.job-side {
+  display: grid;
+  gap: 8px;
+  justify-items: end;
+}
 
 .status-pill,
 .tiny-badge {
@@ -168,7 +239,7 @@ summary:focus-visible {
 .status-pill[data-state='recovered'] { background: rgba(255,207,102,0.18); color: #ffe7a7; }
 .status-pill[data-state='ready_to_finalize'] { background: rgba(159,140,255,0.2); color: #ddd4ff; }
 
-.preview-card .preview-panel { padding: 14px; }
+.preview-panel { padding: 14px; line-height: 1.7; }
 .preview-meta {
   display: flex;
   gap: 8px;
@@ -176,9 +247,7 @@ summary:focus-visible {
   flex-wrap: wrap;
 }
 
-.details-card {
-  padding: 16px;
-}
+.details-card { padding: 16px; }
 summary {
   cursor: pointer;
   list-style: none;
@@ -191,6 +260,14 @@ summary::-webkit-details-marker { display: none; }
   gap: 10px;
   margin-top: 14px;
 }
+.output-list { display: grid; gap: 10px; }
+.output-item {
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: transform 0.15s ease;
+}
 .log-box {
   margin-top: 14px;
   padding: 14px;
@@ -198,7 +275,27 @@ summary::-webkit-details-marker { display: none; }
   color: var(--muted);
 }
 
-@media (min-width: 700px) {
-  .app-shell { max-width: 860px; padding: 24px 18px 48px; }
-  .module-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 860px) {
+  .hero-card,
+  .workspace-grid,
+  .lower-grid,
+  .project-strip {
+    grid-template-columns: 1fr;
+    display: grid;
+  }
+  .project-strip { padding: 16px; }
+}
+
+@media (max-width: 640px) {
+  .app-shell { max-width: 540px; padding: 18px 12px 36px; }
+  .module-grid { grid-template-columns: 1fr; }
+  .hero-card h1 { max-width: none; }
+  .job-item,
+  .block-head,
+  .module-top {
+    align-items: flex-start;
+  }
+  .job-item,
+  .project-strip { display: grid; }
+  .job-side { justify-items: start; }
 }
