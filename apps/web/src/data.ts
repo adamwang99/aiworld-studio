@@ -29,7 +29,7 @@ export const modules = [
     desc: 'Engine / advanced / limits',
     state: 'idle',
   },
-];
+] as const;
 
 export const jobs = [
   {
@@ -53,7 +53,7 @@ export const jobs = [
     owner: 'Research desk',
     eta: 'retry',
   },
-];
+] as const;
 
 export const activities = [
   '[00:00] ingest file',
@@ -61,10 +61,16 @@ export const activities = [
   '[00:05] transcription start',
   '[00:11] partial output ready',
   '[00:16] alignment pending',
-];
+] as const;
 
 export const outputs = [
   { label: 'Transcript.txt', kind: 'text' },
   { label: 'Subtitle.srt', kind: 'subtitle' },
   { label: 'Voiceover.mp3', kind: 'audio' },
-];
+] as const;
+
+export const fakeProjects = [
+  'Podcast localization batch',
+  'News subtitles daily',
+  'Voice article pipeline',
+] as const;

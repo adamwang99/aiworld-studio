@@ -1,6 +1,8 @@
-import { activities, jobs, modules, outputs } from './data';
+import { useMemo, useState } from 'react';
+import { activities, fakeProjects, jobs, modules, outputs } from './data';
 
 type State = 'idle' | 'running' | 'blocked' | 'recovered' | 'ready_to_finalize';
+type ModuleName = (typeof modules)[number]['name'];
 
 function Pill({ state, children }: { state: State; children: React.ReactNode }) {
   return (
@@ -10,7 +12,46 @@ function Pill({ state, children }: { state: State; children: React.ReactNode }) 
   );
 }
 
+const moduleContent: Record<ModuleName, { title: string; desc: string; cta: string }> = {
+  Transcript: {
+    title: 'Transcript workspace',
+    desc: 'Nạp audio/video, nhận transcript thô, theo dõi runtime và partial output.',
+    cta: 'Run transcription',
+  },
+  Subtitle: {
+    title: 'Subtitle workspace',
+    desc: 'Sinh SRT/VTT, kiểm timing, gom output subtitle trong cùng luồng.',
+    cta: 'Generate subtitles',
+  },
+  Translate: {
+    title: 'Translation workspace',
+    desc: 'Chuẩn hóa luồng EN/KR/JP/ZH ↔ VI để tái dùng cho subtitle và voice.',
+    cta: 'Translate content',
+  },
+  Voice: {
+    title: 'Voice workspace',
+    desc: 'Text → speech, preview voice, gom file âm thanh ready-to-publish.',
+    cta: 'Create voiceover',
+  },
+  Outputs: {
+    title: 'Outputs workspace',
+    desc: 'Bundle transcript / subtitle / audio thành gói export thống nhất.',
+    cta: 'Export bundle',
+  },
+  Settings: {
+    title: 'Runtime settings',
+    desc: 'Chọn engine, alignment, TTS, giới hạn workflow và cờ nâng cao.',
+    cta: 'Save settings',
+  },
+};
+
 export function App() {
+  const [activeModule, setActiveModule] = useState<ModuleName>('Transcript');
+  const [selectedProject, setSelectedProject] = useState(fakeProjects[0]);
+  const desktopMeta = window.aiworldStudio;
+
+  const current = useMemo(() => moduleContent[activeModule], [activeModule]);
+
   return (
     <main className="app-shell">
       <div className="aurora aurora-a" />
@@ -40,15 +81,31 @@ export function App() {
             <strong>4</strong>
             <span>engines active</span>
           </div>
+          {desktopMeta ? (
+            <div className="glass hero-metric">
+              <strong>{desktopMeta.platform}</strong>
+              <span>electron {desktopMeta.version}</span>
+            </div>
+          ) : null}
         </div>
       </section>
 
       <section className="glass project-strip">
         <div>
           <p className="eyebrow">Current project</p>
-          <strong>AI World / Podcast localization batch</strong>
+          <strong>AI World / {selectedProject}</strong>
         </div>
         <div className="project-meta">
+          <label className="select-shell">
+            <span className="muted small-label">Project</span>
+            <select value={selectedProject} onChange={(e) => setSelectedProject(e.target.value)}>
+              {fakeProjects.map((project) => (
+                <option key={project} value={project}>
+                  {project}
+                </option>
+              ))}
+            </select>
+          </label>
           <span className="tiny-badge">vi → en</span>
           <span className="tiny-badge">3 assets</span>
           <span className="tiny-badge">priority high</span>
@@ -57,13 +114,17 @@ export function App() {
 
       <section className="module-grid">
         {modules.map((module) => (
-          <article key={module.name} className="glass module-card">
+          <button
+            key={module.name}
+            className={`glass module-card ${activeModule === module.name ? 'active' : ''}`}
+            onClick={() => setActiveModule(module.name)}
+          >
             <div className="module-top">
               <strong>{module.name}</strong>
-              <Pill state={module.state as State}>{module.state}</Pill>
+              <Pill state={module.state}>{module.state}</Pill>
             </div>
             <p className="muted">{module.desc}</p>
-          </article>
+          </button>
         ))}
       </section>
 
@@ -71,10 +132,10 @@ export function App() {
         <section className="glass block-card workspace-main">
           <div className="block-head">
             <div>
-              <h2>Input</h2>
-              <p className="muted">Drop audio / video / text. Chọn workflow rồi chạy.</p>
+              <h2>{current.title}</h2>
+              <p className="muted">{current.desc}</p>
             </div>
-            <button className="primary-btn">Create job</button>
+            <button className="primary-btn">{current.cta}</button>
           </div>
 
           <div className="dropzone">
@@ -136,7 +197,7 @@ export function App() {
                   <p className="muted">{job.meta}</p>
                 </div>
                 <div className="job-side">
-                  <Pill state={job.state as State}>{job.state}</Pill>
+                  <Pill state={job.state}>{job.state}</Pill>
                   <span className="tiny-badge">{job.eta}</span>
                 </div>
               </article>
@@ -162,6 +223,7 @@ export function App() {
               <span className="tiny-badge">vi</span>
               <span className="tiny-badge">00:32</span>
               <span className="tiny-badge">draft</span>
+              <span className="tiny-badge">{activeModule}</span>
             </div>
           </div>
         </section>

@@ -2,6 +2,8 @@
   "name": "aiworld-studio",
   "private": true,
   "version": "0.1.0",
+  "description": "AI World Studio desktop workspace for transcription, translation, subtitles, voice, and media-content production.",
+  "main": "electron/main.cjs",
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -9,6 +11,48 @@
   "scripts": {
     "dev": "npm run dev -w @aiworld-studio/web",
     "build": "npm run build -w @aiworld-studio/web",
-    "preview": "npm run preview -w @aiworld-studio/web"
+    "preview": "npm run preview -w @aiworld-studio/web",
+    "desktop:dev": "concurrently -k \"npm run dev\" \"wait-on http://127.0.0.1:4173 && electron .\"",
+    "dist": "npm run build && electron-builder",
+    "pack": "npm run build && electron-builder --dir"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1",
+    "electron": "^31.7.7",
+    "electron-builder": "^24.13.3",
+    "wait-on": "^8.0.1"
+  },
+  "build": {
+    "appId": "aiworld.studio.desktop",
+    "productName": "AI World Studio",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "electron/**/*",
+      "apps/web/dist/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.productivity"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb",
+        "tar.gz"
+      ],
+      "category": "Utility"
+    }
   }
 }
