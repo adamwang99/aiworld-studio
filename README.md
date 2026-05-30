@@ -1,65 +1,201 @@
 # AI World Studio
 
-Unified AI workspace for transcription, translation, subtitles, voice, and media-content production.
+![AI World Studio](docs/images/01-home.png)
 
-## Vision
-AI World Studio là ứng dụng điều phối workflow media/content AI trong 1 giao diện thống nhất. Mục tiêu: biến audio/video thô thành transcript, subtitle, bản dịch, voice output, và gói output sẵn dùng mà không phải ghép nhiều tool thủ công.
+**AI World Studio** là ứng dụng desktop hợp nhất để biến audio/video thô thành **văn bản, phụ đề, bản dịch và giọng nói lồng tiếng** trong một giao diện duy nhất — không phải ghép nhiều công cụ thủ công.
 
-## Product direction
-- UI style: Glassmorphism dark, aurora background, accent tím–cyan
-- Operator-first workflow
-- Modular architecture
-- Tách UI / orchestration / media engines
-- Dùng nội bộ trước, sản phẩm hóa sau
-- Desktop-first packaging qua Tauri
+Phiên bản hiện tại: `v0.1.0`.
 
-## Planned MVP
-- Project workspace
-- Transcription
-- Subtitle generation
-- Translation layer
-- Voice / TTS
-- Job queue + status
-- Output manager
+Ứng dụng đóng gói native cho **macOS, Windows, Linux** qua Tauri (gói nhẹ, không phải Electron).
 
-## Repository structure
+## Vì sao hữu ích
+
+Quy trình xử lý media bằng AI thường vỡ ở những điểm dễ đoán:
+
+- phải nhảy qua lại giữa nhiều web tool, mỗi tool một tài khoản
+- file audio/video phải upload lên dịch vụ ngoài, lo ngại quyền riêng tư
+- bản ghi, phụ đề, bản dịch nằm rải rác, khó gom thành output dùng được
+- phụ thuộc mạng và API trả phí cho cả những việc máy local làm được
+
+AI World Studio gom các bước đó vào một workspace, ưu tiên xử lý **trên máy (local-first)** và chỉ gọi API online khi bạn chủ động bật.
+
+## Triết lý sản phẩm
+
+- **Local-first, online tùy chọn** — Ghi âm/Phụ đề/Lồng tiếng chạy offline ngay trên máy; Dịch thuật và ASR online qua endpoint cấu hình được.
+- **Cài đâu cũng tự chạy** — không hardcode máy chủ; lần đầu mở app tự cấu hình endpoint qua Settings.
+- **Thiết kế operator-first** — UI dark glassmorphism, aurora background, accent tím–cyan, đọc rõ trong môi trường làm việc lâu.
+- **Đóng gói desktop** — một file cài đặt cho mỗi hệ điều hành, không cần dựng server.
+
+## Các chức năng chính
+
+### 1. Ghi âm → Văn bản (Transcription)
+
+Tải audio/video lên, nhận bản ghi chính xác kèm ngôn ngữ và thời lượng. Xuất `.txt` hoặc `.srt`.
+
+- chạy **trên máy (offline)** bằng Whisper WASM (transformers.js) — mặc định, không cần mạng
+- hoặc gọi **máy chủ ASR online** khi cần model mạnh hơn
+- tự nhận diện ngôn ngữ, hoặc chọn Việt / English / 한국어 / 日本語 / 中文
+
+![Ghi âm → Văn bản](docs/images/02-transcribe.png)
+
+### 2. Phụ đề (Subtitle)
+
+Sinh phụ đề chuẩn timing cho video. Xuất `.srt` hoặc `.vtt` sẵn sàng dùng.
+
+- mỗi dòng phụ đề có mốc thời gian rõ ràng
+- dùng chung engine ASR với chức năng Ghi âm (local hoặc API)
+
+![Phụ đề](docs/images/03-subtitle.png)
+
+### 3. Dịch thuật (Translation)
+
+Dán văn bản, chọn ngôn ngữ đích, nhấn Dịch. Bản dịch hiển thị song song với bản gốc, có nút sao chép.
+
+- dịch qua máy chủ AI tương thích OpenAI (9router nội bộ, OpenAI, hoặc endpoint bất kỳ)
+- hỗ trợ nhiều cặp ngôn ngữ (Việt ↔ Anh / Hàn / Nhật / Trung)
+
+![Dịch thuật](docs/images/04-translate.png)
+
+### 4. Lồng tiếng (Voice / TTS)
+
+Biến văn bản thành giọng nói tự nhiên. Chạy **offline 100%** bằng Web Speech của hệ điều hành.
+
+- chọn giọng đọc, điều chỉnh tốc độ (speed) và cao độ (pitch)
+- không gửi dữ liệu ra ngoài
+
+![Lồng tiếng](docs/images/05-voice.png)
+
+### 5. Cài đặt máy chủ AI (Settings)
+
+Kết nối tới bất kỳ máy chủ AI tương thích OpenAI và chọn chế độ xử lý.
+
+- endpoint + API key + model (mặc định nội bộ AI World: `http://192.168.1.9:20128/v1`)
+- chế độ ASR: **Trên máy (offline)** hoặc **Máy chủ API (online)**
+- chọn model offline: Tiny (~40MB) / Base (~75MB) / Small (~250MB)
+- nút **Kiểm tra kết nối** xác nhận endpoint hoạt động trước khi dùng
+
+![Cài đặt](docs/images/06-settings.png)
+
+## Bắt đầu nhanh — Hướng dẫn từng bước
+
+### Bước 1 — Cài đặt ứng dụng
+
+Tải gói cài đặt cho hệ điều hành của bạn từ trang [Releases](https://github.com/adamwang99/aiworld-studio/releases):
+
+| Hệ điều hành | File cài đặt |
+|---|---|
+| Linux (Debian/Ubuntu) | `AIWorldStudio_0.1.0_amd64.deb` |
+| Linux (Fedora/RHEL) | `AIWorldStudio_0.1.0_x86_64.rpm` |
+| Linux (portable) | `AIWorldStudio_0.1.0_amd64.AppImage` |
+| macOS (Apple Silicon) | `AIWorldStudio_0.1.0_aarch64.dmg` |
+| macOS (Intel) | `AIWorldStudio_0.1.0_x64_intel.dmg` |
+| Windows (installer) | `AIWorldStudio_0.1.0_x64-setup.exe` |
+| Windows (MSI) | `AIWorldStudio_0.1.0_x64_en-US.msi` |
+
+Linux Debian/Ubuntu:
+
+```bash
+sudo apt install ./AIWorldStudio_0.1.0_amd64.deb
+```
+
+### Bước 2 — Mở app và vào Cài đặt
+
+Mở **AI World Studio**, nhấn **Cài đặt máy chủ AI** ở màn hình chính (hoặc mục **Cài đặt** ở sidebar).
+
+![Màn hình chính](docs/images/01-home.png)
+
+### Bước 3 — Kết nối máy chủ AI
+
+Tại trang **Cài đặt**:
+
+1. Nhập **Địa chỉ máy chủ (endpoint)** — ví dụ `http://192.168.1.9:20128/v1` (9router nội bộ) hoặc `https://api.openai.com/v1`.
+2. Nhập **API Key** nếu máy chủ yêu cầu (để trống nếu nội bộ không cần).
+3. Nhập **Model** — ví dụ `Linh` hoặc `gpt-4o-mini`.
+4. Chọn **Chế độ ghi âm → văn bản**: *Trên máy (offline)* để xử lý ngay trên thiết bị, hoặc *Máy chủ API* để dùng online.
+5. Nhấn **Lưu cài đặt**, rồi **Kiểm tra kết nối** để xác nhận.
+
+![Cài đặt máy chủ AI](docs/images/06-settings.png)
+
+### Bước 4 — Chạy chức năng đầu tiên
+
+Quay lại sidebar và chọn chức năng:
+
+- **Ghi âm → Văn bản**: kéo-thả file audio/video, chọn ngôn ngữ nguồn, nhấn xử lý, tải kết quả `.txt`/`.srt`.
+
+  ![Ghi âm → Văn bản](docs/images/02-transcribe.png)
+
+- **Phụ đề**: tải video lên, sinh phụ đề chuẩn timing, tải `.srt`/`.vtt`.
+
+  ![Phụ đề](docs/images/03-subtitle.png)
+
+- **Dịch thuật**: dán văn bản, chọn ngôn ngữ đích, nhấn **Dịch ngay**.
+
+  ![Dịch thuật](docs/images/04-translate.png)
+
+- **Lồng tiếng**: nhập văn bản, chọn giọng, chỉnh tốc độ/cao độ, nhấn **Đọc to**.
+
+  ![Lồng tiếng](docs/images/05-voice.png)
+
+> Lần đầu chạy chế độ *Trên máy*, app tải model AI một lần (~40–250MB tùy lựa chọn) rồi dùng lại offline cho các lần sau.
+
+## Chế độ hoạt động
+
 ```text
-apps/web             # frontend app
+Mở AI World Studio
+→ Cài đặt: nhập endpoint AI + chọn chế độ ASR (local / online)
+→ Kiểm tra kết nối
+→ Chọn chức năng (Ghi âm / Phụ đề / Dịch / Lồng tiếng)
+→ Đưa input (file audio/video hoặc văn bản)
+→ App xử lý (offline trên máy hoặc qua API tùy chế độ)
+→ Xem kết quả + tải output (.txt / .srt / .vtt / audio)
+```
+
+## Cấu trúc kho mã
+
+```text
+apps/web             # frontend app (React + Vite)
 packages/ui          # design system + shared components
 packages/core        # shared business logic
 packages/agents      # orchestration / agent workflows
 packages/media       # transcript / subtitle / tts / translation helpers
-src-tauri            # Tauri desktop shell
+src-tauri            # Tauri desktop shell (Rust)
 docs/product         # PRD, scope, roadmap
 docs/architecture    # system design, ADRs
 docs/decisions       # decision logs
+docs/images          # ảnh hướng dẫn step-by-step
 public               # static assets
 ```
 
-## Development
+## Phát triển (Development)
+
 ```bash
 npm install
-npm run dev
-npm run tauri:dev
+npm run dev          # chạy frontend web ở chế độ dev
+npm run tauri:dev    # chạy app desktop ở chế độ dev
 ```
 
 ## Build
+
 ```bash
-npm run build
-npm run tauri:build
+npm run build        # build frontend
+npm run tauri:build  # đóng gói installer cho OS hiện tại
 ```
 
-## Cross-platform targets
-Tauri bundle path qua GitHub Actions cho:
-- macOS
+Installer đa nền tảng được build qua GitHub Actions:
+
+- macOS (Apple Silicon + Intel)
 - Windows
 - Linux
 
-Workflow file:
-- `.github/workflows/build-tauri.yml`
+Workflow: `.github/workflows/build-tauri.yml`
 
-## Current status
-- Workspace scaffold initialized
-- UI shell v2 implemented
-- Tauri shell added
-- CI build path prepared
+## Giới hạn hiện tại
+
+- Chế độ ASR *Trên máy* dùng Whisper WASM: chính xác tốt với model Base/Small nhưng chậm hơn dịch vụ GPU chuyên dụng; model Tiny nhanh nhưng kém chính xác hơn với audio nhiễu.
+- Dịch thuật bắt buộc cần endpoint AI online (chưa có engine dịch offline).
+- Lồng tiếng dùng Web Speech của hệ điều hành nên danh sách giọng phụ thuộc vào OS.
+- Một số chức năng workspace (Dự án, Thư viện) đang ở trạng thái phát triển.
+
+## Lịch sử phiên bản
+
+Xem `docs/decisions` và `docs/product` để theo dõi quyết định thiết kế và lộ trình.
