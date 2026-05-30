@@ -6,6 +6,7 @@ export type Settings = {
   endpoint: string; // e.g. http://192.168.1.9:6011/v1  or  https://api.openai.com/v1
   apiKey: string;
   model: string;
+  asrEndpoint: string; // transcription service, e.g. http://192.168.1.9:6021
 };
 
 const KEY = 'aiworld.settings.v1';
@@ -14,6 +15,7 @@ const DEFAULTS: Settings = {
   endpoint: 'http://192.168.1.9:20128/v1',
   apiKey: '',
   model: 'Linh',
+  asrEndpoint: 'http://192.168.1.9:6021',
 };
 
 export function loadSettings(): Settings {
@@ -102,4 +104,51 @@ export async function ping(settings: Settings): Promise<string> {
     { role: 'user', content: 'Reply with the single word: OK' },
   ]);
   return out;
+}
+
+export type TranscriptResult = {
+  text: string;
+  language: string;
+  duration: number;
+  segments: { start: number; end: number; text: string }[];
+};
+
+export async function transcribe(
+  settings: Settings,
+  file: File,
+  language: string | null,
+  onProgress?: (msg: string) => void,
+  signal?: AbortSignal,
+): Promise<TranscriptResult> {
+  if (!settings.asrEndpoint.trim()) {
+    throw new Error('Chưa cấu hình máy chủ ghi âm. Vào Cài đặt để nhập địa chỉ.');
+  }
+  const base = settings.asrEndpoint.replace(/\/+$/, '');
+  const url = `${base}/v1/audio/transcriptions`;
+  const form = new FormData();
+  form.append('file', file);
+  form.append('model', 'base');
+  if (language) form.append('language', language);
+  onProgress?.('Đang tải file lên và xử lý...');
+  const res = await fetch(url, { method: 'POST', body: form, signal });
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`Lỗi máy chủ ghi âm (${res.status}). ${body.slice(0, 200)}`);
+  }
+  return (await res.json()) as TranscriptResult;
+}
+
+export function buildSrt(segments: { start: number; end: number; text: string }[]): string {
+  const ts = (sec: number) => {
+    const ms = Math.round(sec * 1000);
+    const h = Math.floor(ms / 3600000);
+    const m = Math.floor((ms % 3600000) / 60000);
+    const s = Math.floor((ms % 60000) / 1000);
+    const r = ms % 1000;
+    const p = (n: number, l = 2) => String(n).padStart(l, '0');
+    return `${p(h)}:${p(m)}:${p(s)},${p(r, 3)}`;
+  };
+  return segments
+    .map((s, i) => `${i + 1}\n${ts(s.start)} --> ${ts(s.end)}\n${s.text.trim()}\n`)
+    .join('\n');
 }

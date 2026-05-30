@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { navItems, projects, stats, workflows, type ProjectStatus } from './data';
 import { TranslatePage } from './pages/TranslatePage';
+import { TranscribePage } from './pages/TranscribePage';
 import { SettingsPage } from './pages/SettingsPage';
 import { ComingSoon } from './pages/ComingSoon';
 
@@ -136,7 +137,7 @@ export function App() {
   if (active === 'home') body = <HomePage go={go} />;
   else if (active === 'translate') body = <div className="content"><TranslatePage onNeedSettings={() => go('settings')} /></div>;
   else if (active === 'settings') body = <div className="content"><SettingsPage /></div>;
-  else if (active === 'transcribe') body = <div className="content"><ComingSoon title="Ghi âm → Văn bản" desc="Chuyển giọng nói trong audio/video thành văn bản." /></div>;
+  else if (active === 'transcribe') body = <div className="content"><TranscribePage onNeedSettings={() => go('settings')} /></div>;
   else if (active === 'subtitle') body = <div className="content"><ComingSoon title="Phụ đề" desc="Tạo phụ đề SRT/VTT tự động với timing chuẩn." /></div>;
   else if (active === 'voice') body = <div className="content"><ComingSoon title="Lồng tiếng" desc="Biến văn bản thành giọng nói tự nhiên." /></div>;
   else if (active === 'projects') body = <div className="content"><ComingSoon title="Dự án" desc="Quản lý toàn bộ dự án media của bạn." /></div>;

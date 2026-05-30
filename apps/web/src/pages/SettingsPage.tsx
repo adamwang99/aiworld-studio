@@ -72,6 +72,16 @@ export function SettingsPage() {
           />
         </label>
 
+        <label className="form-field">
+          <span>Máy chủ ghi âm (transcription)</span>
+          <input
+            value={s.asrEndpoint}
+            onChange={(e) => update({ asrEndpoint: e.target.value })}
+            placeholder="http://192.168.1.9:6021"
+          />
+          <small>Dịch vụ chuyển giọng nói → văn bản (Whisper). Mặc định nội bộ: http://192.168.1.9:6021</small>
+        </label>
+
         <div className="row gap">
           <button className="btn btn-primary solid" onClick={save}>{saved ? 'Đã lưu ✓' : 'Lưu cài đặt'}</button>
           <button className="btn btn-ghost dark" onClick={test} disabled={!isConfigured(s) || testState === 'busy'}>
