@@ -13,10 +13,16 @@ jobs:
         include:
           - os: ubuntu-22.04
             artifact: linux
+            rust_target: ""
           - os: windows-latest
             artifact: windows
+            rust_target: ""
           - os: macos-latest
-            artifact: macos
+            artifact: macos-arm64
+            rust_target: aarch64-apple-darwin
+          - os: macos-latest
+            artifact: macos-intel
+            rust_target: x86_64-apple-darwin
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -28,11 +34,14 @@ jobs:
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust_target }}
 
       - name: Cache Rust build
         uses: swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
+          key: ${{ matrix.artifact }}
 
       - name: Install Linux deps
         if: matrix.os == 'ubuntu-22.04'
@@ -44,7 +53,13 @@ jobs:
         run: npm install
 
       - name: Build Tauri app
-        run: npm run tauri:build
+        shell: bash
+        run: |
+          if [ -n "${{ matrix.rust_target }}" ]; then
+            npm run tauri:build -- --target ${{ matrix.rust_target }}
+          else
+            npm run tauri:build
+          fi
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -59,4 +74,6 @@ jobs:
             src-tauri/target/release/bundle/**/*.msi
             src-tauri/target/release/bundle/**/*.exe
             src-tauri/target/release/bundle/**/*-setup.exe
+            src-tauri/target/*/release/bundle/**/*.dmg
+            src-tauri/target/*/release/bundle/**/*.app
           if-no-files-found: error
