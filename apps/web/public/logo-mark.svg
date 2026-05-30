@@ -1,0 +1,25 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="emblem" x1="110" y1="90" x2="410" y2="430" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6366f1"/>
+      <stop offset="0.5" stop-color="#9f8cff"/>
+      <stop offset="1" stop-color="#ec4899"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="90" y1="90" x2="430" y2="430" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#67ddff"/>
+      <stop offset="0.55" stop-color="#9f8cff"/>
+      <stop offset="1" stop-color="#ff8da1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded hexagon emblem, simple single rim for small-size clarity -->
+  <path d="M256 64 L420 159 L420 353 L256 448 L92 353 L92 159 Z"
+        fill="url(#emblem)" stroke="url(#rim)" stroke-width="16" stroke-linejoin="round"/>
+
+  <!-- 3 bold sound bars, symmetric around x=256 -->
+  <g fill="#ffffff">
+    <rect x="176" y="206" width="40" height="100" rx="20"/>
+    <rect x="236" y="158" width="40" height="196" rx="20"/>
+    <rect x="296" y="206" width="40" height="100" rx="20"/>
+  </g>
+</svg>

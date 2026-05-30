@@ -17,16 +17,7 @@ function Logo() {
   return (
     <div className="brand">
       <div className="brand-mark">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M12 2L3 7v10l9 5 9-5V7l-9-5z" fill="url(#g)" />
-          <path d="M12 7v10M7.5 9.5v5M16.5 9.5v5" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" opacity="0.92" />
-          <defs>
-            <linearGradient id="g" x1="3" y1="2" x2="21" y2="22" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#6366f1" />
-              <stop offset="1" stopColor="#ec4899" />
-            </linearGradient>
-          </defs>
-        </svg>
+        <img src="/logo.png" alt="AI World Studio" width="44" height="44" />
       </div>
       <div className="brand-text">
         <strong>AI World Studio</strong>
