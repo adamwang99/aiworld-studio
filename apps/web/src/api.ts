@@ -7,6 +7,8 @@ export type Settings = {
   apiKey: string;
   model: string;
   asrEndpoint: string; // transcription service, e.g. http://192.168.1.9:6021
+  asrMode: 'local' | 'api'; // 'local' = on-device WASM Whisper, 'api' = ASR server
+  localModel: 'Xenova/whisper-tiny' | 'Xenova/whisper-base' | 'Xenova/whisper-small';
 };
 
 const KEY = 'aiworld.settings.v1';
@@ -16,6 +18,8 @@ const DEFAULTS: Settings = {
   apiKey: '',
   model: 'Linh',
   asrEndpoint: 'http://192.168.1.9:6021',
+  asrMode: 'local',
+  localModel: 'Xenova/whisper-base',
 };
 
 export function loadSettings(): Settings {
@@ -120,8 +124,14 @@ export async function transcribe(
   onProgress?: (msg: string) => void,
   signal?: AbortSignal,
 ): Promise<TranscriptResult> {
+  // Local mode: run Whisper on-device via WASM (no server).
+  if (settings.asrMode === 'local') {
+    const { transcribeLocal } = await import('./localAsr');
+    return transcribeLocal(file, settings.localModel, language, onProgress);
+  }
+  // API mode: send to a transcription server.
   if (!settings.asrEndpoint.trim()) {
-    throw new Error('Chưa cấu hình máy chủ ghi âm. Vào Cài đặt để nhập địa chỉ.');
+    throw new Error('Chưa cấu hình máy chủ ghi âm. Vào Cài đặt để nhập địa chỉ, hoặc chuyển sang chế độ Trên máy.');
   }
   const base = settings.asrEndpoint.replace(/\/+$/, '');
   const url = `${base}/v1/audio/transcriptions`;

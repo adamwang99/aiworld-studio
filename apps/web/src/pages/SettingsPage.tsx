@@ -73,14 +73,34 @@ export function SettingsPage() {
         </label>
 
         <label className="form-field">
-          <span>Máy chủ ghi âm (transcription)</span>
-          <input
-            value={s.asrEndpoint}
-            onChange={(e) => update({ asrEndpoint: e.target.value })}
-            placeholder="http://192.168.1.9:6021"
-          />
-          <small>Dịch vụ chuyển giọng nói → văn bản (Whisper). Mặc định nội bộ: http://192.168.1.9:6021</small>
+          <span>Chế độ ghi âm → văn bản</span>
+          <select value={s.asrMode} onChange={(e) => update({ asrMode: e.target.value as Settings['asrMode'] })}>
+            <option value="local">Trên máy (offline, không cần mạng)</option>
+            <option value="api">Máy chủ API (online)</option>
+          </select>
+          <small>"Trên máy" xử lý ngay trên thiết bị bằng AI offline. Lần đầu tải model ~40-150MB rồi dùng lại.</small>
         </label>
+
+        {s.asrMode === 'local' ? (
+          <label className="form-field">
+            <span>Model trên máy</span>
+            <select value={s.localModel} onChange={(e) => update({ localModel: e.target.value as Settings['localModel'] })}>
+              <option value="Xenova/whisper-tiny">Tiny — nhanh nhất, nhẹ (~40MB)</option>
+              <option value="Xenova/whisper-base">Base — cân bằng (~75MB)</option>
+              <option value="Xenova/whisper-small">Small — chính xác hơn (~250MB)</option>
+            </select>
+          </label>
+        ) : (
+          <label className="form-field">
+            <span>Máy chủ ghi âm (transcription)</span>
+            <input
+              value={s.asrEndpoint}
+              onChange={(e) => update({ asrEndpoint: e.target.value })}
+              placeholder="http://192.168.1.9:6021"
+            />
+            <small>Dịch vụ chuyển giọng nói → văn bản (Whisper). Mặc định nội bộ: http://192.168.1.9:6021</small>
+          </label>
+        )}
 
         <div className="row gap">
           <button className="btn btn-primary solid" onClick={save}>{saved ? 'Đã lưu ✓' : 'Lưu cài đặt'}</button>

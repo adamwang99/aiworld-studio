@@ -29,8 +29,8 @@ export function SubtitlePage({ onNeedSettings }: { onNeedSettings: () => void })
     setResult(null);
     if (!file) { setError('Chọn một file audio hoặc video trước.'); return; }
     const settings = loadSettings();
-    if (!settings.asrEndpoint.trim()) {
-      setError('Chưa cấu hình máy chủ ghi âm. Mở Cài đặt.');
+    if (settings.asrMode === 'api' && !settings.asrEndpoint.trim()) {
+      setError('Chưa cấu hình máy chủ ghi âm. Mở Cài đặt, hoặc chuyển sang chế độ Trên máy.');
       onNeedSettings();
       return;
     }
