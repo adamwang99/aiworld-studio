@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import { navItems, projects, stats, workflows, type ProjectStatus } from './data';
+import { TranslatePage } from './pages/TranslatePage';
+import { SettingsPage } from './pages/SettingsPage';
+import { ComingSoon } from './pages/ComingSoon';
 
 const statusLabel: Record<ProjectStatus, string> = {
   done: 'Hoàn thành',
@@ -39,6 +42,7 @@ function Icon({ name }: { name: string }) {
     translate: 'M4 5h7M7 4v1c0 4-2 7-5 9m1-4c1 3 3 4 6 5m4-6h6m-3 0v0l-3 8m6 0l-3-8m0 0l-1.5 4.5h7',
     voice: 'M12 3a3 3 0 00-3 3v6a3 3 0 006 0V6a3 3 0 00-3-3zM5 11a7 7 0 0014 0M12 18v3M8 21h8',
     library: 'M5 4v16M9 4v16M13 5l5 15M3 4h6m0 0h4',
+    settings: 'M12 8a4 4 0 100 8 4 4 0 000-8zM3 12h2m14 0h2M12 3v2m0 14v2M5.6 5.6l1.4 1.4m10 10l1.4 1.4m0-12.8l-1.4 1.4m-10 10l-1.4 1.4',
   };
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -47,19 +51,108 @@ function Icon({ name }: { name: string }) {
   );
 }
 
+function HomePage({ go }: { go: (key: string) => void }) {
+  return (
+    <main className="content">
+      <section className="hero">
+        <div className="hero-text">
+          <span className="hero-eyebrow">Chào mừng trở lại 👋</span>
+          <h1>Biến audio &amp; video thành nội dung hoàn chỉnh</h1>
+          <p>Ghi âm, phụ đề, dịch thuật và lồng tiếng — tất cả trong một nơi, chỉ vài cú nhấp.</p>
+          <div className="hero-actions">
+            <button className="btn btn-primary" onClick={() => go('translate')}>Dịch ngay</button>
+            <button className="btn btn-ghost" onClick={() => go('settings')}>Cài đặt máy chủ AI</button>
+          </div>
+        </div>
+        <div className="hero-stats">
+          {stats.map((st) => (
+            <div key={st.label} className="stat">
+              <span className="stat-label">{st.label}</span>
+              <div className="stat-row">
+                <strong>{st.value}</strong>
+                <span className={`trend ${st.up ? 'up' : 'down'}`}>{st.trend}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="section-head"><h2>Bạn muốn làm gì hôm nay?</h2></div>
+        <div className="workflow-grid">
+          {workflows.map((w) => (
+            <button key={w.key} className="workflow-card" onClick={() => go(w.key)}>
+              <div className="workflow-icon" style={{ background: `${w.color}22`, color: w.color }}>
+                <Icon name={w.key} />
+              </div>
+              {w.badge ? <span className="workflow-badge">{w.badge}</span> : null}
+              <strong>{w.title}</strong>
+              <p>{w.desc}</p>
+              <span className="workflow-go">Bắt đầu →</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="section-head">
+          <h2>Dự án gần đây</h2>
+          <button className="link-btn" onClick={() => go('projects')}>Xem tất cả</button>
+        </div>
+        <div className="project-list">
+          {projects.map((p) => (
+            <article key={p.title} className="project-row">
+              <div className="project-thumb" style={{ background: `${p.accent}22`, color: p.accent }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M8 5v14l11-7-11-7z" />
+                </svg>
+              </div>
+              <div className="project-info">
+                <strong>{p.title}</strong>
+                <span>{p.type} · {p.duration}</span>
+              </div>
+              <div className="project-progress">
+                {p.status === 'processing' ? (
+                  <div className="bar"><div className="bar-fill" style={{ width: `${p.progress}%`, background: p.accent }} /></div>
+                ) : null}
+              </div>
+              <span className={`status status-${p.status}`}>{statusLabel[p.status]}</span>
+              <span className="project-time">{p.updated}</span>
+            </article>
+          ))}
+        </div>
+      </section>
+    </main>
+  );
+}
+
+const allNav = [...navItems, { key: 'settings', label: 'Cài đặt' }];
+
 export function App() {
   const [active, setActive] = useState('home');
+  const go = (key: string) => setActive(key);
+
+  let body;
+  if (active === 'home') body = <HomePage go={go} />;
+  else if (active === 'translate') body = <div className="content"><TranslatePage onNeedSettings={() => go('settings')} /></div>;
+  else if (active === 'settings') body = <div className="content"><SettingsPage /></div>;
+  else if (active === 'transcribe') body = <div className="content"><ComingSoon title="Ghi âm → Văn bản" desc="Chuyển giọng nói trong audio/video thành văn bản." /></div>;
+  else if (active === 'subtitle') body = <div className="content"><ComingSoon title="Phụ đề" desc="Tạo phụ đề SRT/VTT tự động với timing chuẩn." /></div>;
+  else if (active === 'voice') body = <div className="content"><ComingSoon title="Lồng tiếng" desc="Biến văn bản thành giọng nói tự nhiên." /></div>;
+  else if (active === 'projects') body = <div className="content"><ComingSoon title="Dự án" desc="Quản lý toàn bộ dự án media của bạn." /></div>;
+  else if (active === 'library') body = <div className="content"><ComingSoon title="Thư viện" desc="Kho file và kết quả đã xử lý." /></div>;
+  else body = <HomePage go={go} />;
 
   return (
     <div className="layout">
       <aside className="sidebar">
         <Logo />
         <nav className="nav">
-          {navItems.map((item) => (
+          {allNav.map((item) => (
             <button
               key={item.key}
               className={`nav-item ${active === item.key ? 'active' : ''}`}
-              onClick={() => setActive(item.key)}
+              onClick={() => go(item.key)}
             >
               <Icon name={item.key} />
               <span>{item.label}</span>
@@ -89,91 +182,10 @@ export function App() {
               </svg>
               <span className="dot" />
             </button>
-            <div className="avatar">AW</div>
+            <button className="avatar" onClick={() => go('settings')} aria-label="Cài đặt">AW</button>
           </div>
         </header>
-
-        <main className="content">
-          <section className="hero">
-            <div className="hero-text">
-              <span className="hero-eyebrow">Chào mừng trở lại 👋</span>
-              <h1>Biến audio &amp; video thành nội dung hoàn chỉnh</h1>
-              <p>Ghi âm, phụ đề, dịch thuật và lồng tiếng — tất cả trong một nơi, chỉ vài cú nhấp.</p>
-              <div className="hero-actions">
-                <button className="btn btn-primary">+ Dự án mới</button>
-                <button className="btn btn-ghost">Xem hướng dẫn</button>
-              </div>
-            </div>
-            <div className="hero-stats">
-              {stats.map((s) => (
-                <div key={s.label} className="stat">
-                  <span className="stat-label">{s.label}</span>
-                  <div className="stat-row">
-                    <strong>{s.value}</strong>
-                    <span className={`trend ${s.up ? 'up' : 'down'}`}>{s.trend}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="section">
-            <div className="section-head">
-              <h2>Bạn muốn làm gì hôm nay?</h2>
-            </div>
-            <div className="workflow-grid">
-              {workflows.map((w) => (
-                <button key={w.key} className="workflow-card">
-                  <div className="workflow-icon" style={{ background: `${w.color}22`, color: w.color }}>
-                    <Icon name={w.key} />
-                  </div>
-                  {w.badge ? <span className="workflow-badge">{w.badge}</span> : null}
-                  <strong>{w.title}</strong>
-                  <p>{w.desc}</p>
-                  <span className="workflow-go">Bắt đầu →</span>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section className="section">
-            <div className="section-head">
-              <h2>Dự án gần đây</h2>
-              <button className="link-btn">Xem tất cả</button>
-            </div>
-            <div className="project-list">
-              {projects.map((p) => (
-                <article key={p.title} className="project-row">
-                  <div className="project-thumb" style={{ background: `${p.accent}22`, color: p.accent }}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M8 5v14l11-7-11-7z" />
-                    </svg>
-                  </div>
-                  <div className="project-info">
-                    <strong>{p.title}</strong>
-                    <span>{p.type} · {p.duration}</span>
-                  </div>
-                  <div className="project-progress">
-                    {p.status === 'processing' ? (
-                      <div className="bar">
-                        <div className="bar-fill" style={{ width: `${p.progress}%`, background: p.accent }} />
-                      </div>
-                    ) : null}
-                  </div>
-                  <span className={`status status-${p.status}`}>{statusLabel[p.status]}</span>
-                  <span className="project-time">{p.updated}</span>
-                  <button className="icon-btn ghost" aria-label="Tùy chọn">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                      <circle cx="5" cy="12" r="1.6" />
-                      <circle cx="12" cy="12" r="1.6" />
-                      <circle cx="19" cy="12" r="1.6" />
-                    </svg>
-                  </button>
-                </article>
-              ))}
-            </div>
-          </section>
-        </main>
+        {body}
       </div>
     </div>
   );
