@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { navItems, projects, stats, workflows, type ProjectStatus } from './data';
 import { TranslatePage } from './pages/TranslatePage';
 import { TranscribePage } from './pages/TranscribePage';
+import { SubtitlePage } from './pages/SubtitlePage';
+import { VoicePage } from './pages/VoicePage';
 import { SettingsPage } from './pages/SettingsPage';
 import { ComingSoon } from './pages/ComingSoon';
 
@@ -138,8 +140,8 @@ export function App() {
   else if (active === 'translate') body = <div className="content"><TranslatePage onNeedSettings={() => go('settings')} /></div>;
   else if (active === 'settings') body = <div className="content"><SettingsPage /></div>;
   else if (active === 'transcribe') body = <div className="content"><TranscribePage onNeedSettings={() => go('settings')} /></div>;
-  else if (active === 'subtitle') body = <div className="content"><ComingSoon title="Phụ đề" desc="Tạo phụ đề SRT/VTT tự động với timing chuẩn." /></div>;
-  else if (active === 'voice') body = <div className="content"><ComingSoon title="Lồng tiếng" desc="Biến văn bản thành giọng nói tự nhiên." /></div>;
+  else if (active === 'subtitle') body = <div className="content"><SubtitlePage onNeedSettings={() => go('settings')} /></div>;
+  else if (active === 'voice') body = <div className="content"><VoicePage /></div>;
   else if (active === 'projects') body = <div className="content"><ComingSoon title="Dự án" desc="Quản lý toàn bộ dự án media của bạn." /></div>;
   else if (active === 'library') body = <div className="content"><ComingSoon title="Thư viện" desc="Kho file và kết quả đã xử lý." /></div>;
   else body = <HomePage go={go} />;
