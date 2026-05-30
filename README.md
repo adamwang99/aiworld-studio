@@ -11,7 +11,7 @@ AI World Studio là ứng dụng điều phối workflow media/content AI trong 
 - Modular architecture
 - Tách UI / orchestration / media engines
 - Dùng nội bộ trước, sản phẩm hóa sau
-- Desktop-first packaging qua Electron
+- Desktop-first packaging qua Tauri
 
 ## Planned MVP
 - Project workspace
@@ -29,7 +29,7 @@ packages/ui          # design system + shared components
 packages/core        # shared business logic
 packages/agents      # orchestration / agent workflows
 packages/media       # transcript / subtitle / tts / translation helpers
-electron             # desktop shell
+src-tauri            # Tauri desktop shell
 docs/product         # PRD, scope, roadmap
 docs/architecture    # system design, ADRs
 docs/decisions       # decision logs
@@ -40,25 +40,26 @@ public               # static assets
 ```bash
 npm install
 npm run dev
-npm run desktop:dev
+npm run tauri:dev
 ```
 
 ## Build
 ```bash
 npm run build
-npm run pack
-npm run dist
+npm run tauri:build
 ```
 
 ## Cross-platform targets
-- macOS: `dmg`, `zip`
-- Windows: `nsis`, `portable`
-- Linux: `AppImage`, `deb`, `tar.gz`
+Tauri bundle path qua GitHub Actions cho:
+- macOS
+- Windows
+- Linux
 
-GitHub Actions workflow: `.github/workflows/build-desktop.yml`
+Workflow file:
+- `.github/workflows/build-tauri.yml`
 
 ## Current status
 - Workspace scaffold initialized
 - UI shell v2 implemented
-- Electron shell added
-- Linux unpacked desktop build verified
+- Tauri shell added
+- CI build path prepared
