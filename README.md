@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/images/logo.png" alt="AI World Studio" width="180"/>
+</p>
+
 # AI World Studio
 
 ![AI World Studio](docs/images/01-home.png)
@@ -195,6 +199,17 @@ Workflow: `.github/workflows/build-tauri.yml`
 - Dịch thuật bắt buộc cần endpoint AI online (chưa có engine dịch offline).
 - Lồng tiếng dùng Web Speech của hệ điều hành nên danh sách giọng phụ thuộc vào OS.
 - Một số chức năng workspace (Dự án, Thư viện) đang ở trạng thái phát triển.
+
+## Thương hiệu (Branding)
+
+Logo AI World Studio: lục giác kính (glassmorphism) với gradient indigo → tím → pink, viền glow cyan, biểu tượng sóng âm trắng đan xuyên vòng quỹ đạo gợi "world". Nền trong suốt.
+
+| Asset | Dùng cho |
+|---|---|
+| `docs/images/logo.svg` / `logo.png` | logo chính (vector + 1024px) |
+| `docs/images/logo-512.png` … `logo-128.png` | app icon, hero, README |
+| `docs/images/logo-mark.svg` | bản rút gọn (3 thanh sóng) cho cỡ nhỏ |
+| `docs/images/favicon-64.png` … `favicon-16.png` | favicon trình duyệt / tab |
 
 ## Lịch sử phiên bản
 
