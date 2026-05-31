@@ -1,7 +1,7 @@
 {
   "name": "aiworld-studio",
   "private": true,
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "AI World Studio desktop workspace for transcription, translation, subtitles, voice, and media-content production.",
   "workspaces": [
     "apps/*",

@@ -20,7 +20,7 @@ export type Settings = {
 // TTS engine presets. All speak the same OpenAI-compatible /audio/speech API
 // (we wrap each engine behind that contract), so switching is just endpoint +
 // voice + a hardware-requirement hint shown to the user.
-export type TtsEngine = 'piper' | 'vieneu' | 'omni' | 'custom';
+export type TtsEngine = 'valtec' | 'piper' | 'vieneu' | 'omni' | 'custom';
 
 export const TTS_ENGINES: {
   id: TtsEngine;
@@ -32,17 +32,26 @@ export const TTS_ENGINES: {
   requirement: string;
 }[] = [
   {
+    id: 'valtec',
+    label: 'Valtec (mặc định — giọng Việt tự nhiên)',
+    endpoint: 'http://192.168.1.5:6025/v1',
+    model: 'valtec',
+    voice: 'vi',
+    quality: 'Giọng tiếng Việt tự nhiên (VITS), 5 giọng Bắc/Nam nam-nữ',
+    requirement: 'Chạy trên máy chủ nội bộ (không tốn tài nguyên máy bạn). Gần thời gian thực, không cần GPU.',
+  },
+  {
     id: 'piper',
-    label: 'Piper (mặc định — nhẹ nhất)',
+    label: 'Piper (nhẹ + nhanh nhất)',
     endpoint: 'http://192.168.1.5:6022/v1',
     model: 'tts-1',
     voice: 'vi',
-    quality: 'Giọng cơ bản, rõ ràng',
-    requirement: 'Chạy mọi máy. Nhẹ (~40MB RAM), nhanh hơn thời gian thực. Không cần GPU.',
+    quality: 'Giọng cơ bản, rõ ràng — nhanh nhất',
+    requirement: 'Siêu nhẹ, nhanh hơn thời gian thực. Chọn khi ưu tiên tốc độ.',
   },
   {
     id: 'vieneu',
-    label: 'VieNeu-TTS-v2 (giọng Việt tự nhiên)',
+    label: 'VieNeu-TTS-v2 (giọng tự nhiên + voice clone)',
     endpoint: 'http://192.168.1.5:6023/v1',
     model: 'vieneu',
     voice: 'vi',
@@ -79,10 +88,10 @@ const DEFAULTS: Settings = {
   asrMode: 'local',
   localModel: 'Xenova/whisper-base',
   ttsMode: 'api',
-  ttsEngine: 'piper',
-  ttsEndpoint: 'http://192.168.1.5:6022/v1',
+  ttsEngine: 'valtec',
+  ttsEndpoint: 'http://192.168.1.5:6025/v1',
   ttsApiKey: '',
-  ttsModel: 'tts-1',
+  ttsModel: 'valtec',
   ttsVoice: 'vi',
 };
 
