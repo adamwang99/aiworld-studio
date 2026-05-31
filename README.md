@@ -8,7 +8,7 @@
 
 **AI World Studio** là ứng dụng desktop hợp nhất để biến audio/video thô thành **văn bản, phụ đề, bản dịch và giọng nói lồng tiếng** trong một giao diện duy nhất — không phải ghép nhiều công cụ thủ công.
 
-Phiên bản hiện tại: `v0.1.4`.
+Phiên bản hiện tại: `v0.1.5`.
 
 Ứng dụng đóng gói native cho **macOS, Windows, Linux** qua Tauri (gói nhẹ, không phải Electron).
 
@@ -68,7 +68,7 @@ Biến văn bản thành giọng nói tự nhiên. Chọn được mô hình (en
 - **Valtec** (mặc định) — giọng tiếng Việt tự nhiên (VITS), 5 giọng Bắc/Nam nam-nữ. Chạy trên máy chủ nội bộ nên không tốn tài nguyên máy người dùng; gần thời gian thực, không cần GPU.
 - **Piper** — nhẹ + nhanh nhất. Giọng cơ bản, chọn khi ưu tiên tốc độ.
 - **VieNeu-TTS-v2** — giọng tự nhiên + voice cloning. Khuyến nghị RAM ≥ 8GB; mượt nếu có GPU/Apple Silicon.
-- **OmniVoice** — chất lượng cao nhất, voice design + cloning. **Bắt buộc GPU** (NVIDIA CUDA / Apple Silicon) + RAM ≥ 16GB.
+- **OmniVoice** — chất lượng cao nhất, phát âm tiếng Việt chuẩn, voice design + cloning. Chạy trên máy chủ GPU (Mac mini M4 — Metal), gần thời gian thực. Cần máy M4 bật và trong mạng nội bộ.
 - **Tùy chỉnh** — trỏ tới bất kỳ endpoint tương thích OpenAI `/audio/speech`.
 - Hoặc **Trên máy** — dùng giọng đọc hệ điều hành (Windows/macOS).
 
@@ -103,20 +103,20 @@ Tải gói cài đặt cho hệ điều hành của bạn từ trang [Releases](
 
 | Hệ điều hành | File cài đặt |
 |---|---|
-| Linux (Debian/Ubuntu) | `AIWorldStudio_0.1.4_amd64.deb` |
-| Linux (Fedora/RHEL) | `AIWorldStudio_0.1.4_x86_64.rpm` |
-| Linux (portable) | `AIWorldStudio_0.1.4_amd64.AppImage` |
-| macOS (Apple Silicon) | `AIWorldStudio_0.1.4_aarch64.dmg` |
-| macOS (Intel) | `AIWorldStudio_0.1.4_x64_intel.dmg` |
-| Windows (installer) | `AIWorldStudio_0.1.4_x64-setup.exe` |
-| Windows (MSI) | `AIWorldStudio_0.1.4_x64_en-US.msi` |
+| Linux (Debian/Ubuntu) | `AIWorldStudio_0.1.5_amd64.deb` |
+| Linux (Fedora/RHEL) | `AIWorldStudio_0.1.5_x86_64.rpm` |
+| Linux (portable) | `AIWorldStudio_0.1.5_amd64.AppImage` |
+| macOS (Apple Silicon) | `AIWorldStudio_0.1.5_aarch64.dmg` |
+| macOS (Intel) | `AIWorldStudio_0.1.5_x64_intel.dmg` |
+| Windows (installer) | `AIWorldStudio_0.1.5_x64-setup.exe` |
+| Windows (MSI) | `AIWorldStudio_0.1.5_x64_en-US.msi` |
 
 Linux Debian/Ubuntu (luôn lấy bản mới nhất):
 
 ```bash
 # tải bản mới nhất (không cần ghi số phiên bản)
 curl -L -o AIWorldStudio.deb \
-  https://github.com/adamwang99/aiworld-studio/releases/latest/download/AIWorldStudio_0.1.4_amd64.deb
+  https://github.com/adamwang99/aiworld-studio/releases/latest/download/AIWorldStudio_0.1.5_amd64.deb
 sudo apt install ./AIWorldStudio.deb
 ```
 

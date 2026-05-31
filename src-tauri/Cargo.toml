@@ -1,6 +1,6 @@
 [package]
 name = "aiworld-studio"
-version = "0.1.4"
+version = "0.1.5"
 description = "AI World Studio desktop app"
 authors = ["Adam Wang <adamwang99@users.noreply.github.com>"]
 edition = "2021"

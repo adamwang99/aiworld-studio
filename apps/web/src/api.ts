@@ -60,12 +60,12 @@ export const TTS_ENGINES: {
   },
   {
     id: 'omni',
-    label: 'OmniVoice (chất lượng cao nhất)',
-    endpoint: 'http://192.168.1.5:6024/v1',
+    label: 'OmniVoice (chất lượng cao nhất — GPU)',
+    endpoint: 'http://192.168.1.12:6024/v1',
     model: 'omnivoice',
-    voice: 'female',
-    quality: 'Chất lượng cao nhất, voice design + cloning',
-    requirement: 'BẮT BUỘC GPU (NVIDIA CUDA / Apple Silicon M-series) + RAM ≥ 16GB. KHÔNG chạy thực dụng trên CPU thường.',
+    voice: 'vi',
+    quality: 'Chất lượng cao nhất, phát âm tiếng Việt chuẩn, voice design + cloning',
+    requirement: 'Chạy trên máy chủ GPU (Mac mini M4 — Metal). Gần thời gian thực. Cần máy M4 bật và trong mạng nội bộ.',
   },
   {
     id: 'custom',
