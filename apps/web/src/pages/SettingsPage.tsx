@@ -120,7 +120,7 @@ export function SettingsPage() {
                 onChange={(e) => update({ ttsEndpoint: e.target.value })}
                 placeholder="https://api.openai.com/v1"
               />
-              <small>API tương thích OpenAI có endpoint /audio/speech. Ví dụ: https://api.openai.com/v1</small>
+              <small>API tương thích OpenAI có endpoint /audio/speech. Mặc định nội bộ AI World: http://192.168.1.5:6022/v1 (Piper, offline, không cần key). Hoặc dùng https://api.openai.com/v1</small>
             </label>
             <label className="form-field">
               <span>TTS API Key</span>
@@ -145,7 +145,7 @@ export function SettingsPage() {
                 <input
                   value={s.ttsVoice}
                   onChange={(e) => update({ ttsVoice: e.target.value })}
-                  placeholder="alloy"
+                  placeholder="vi"
                 />
               </label>
             </div>

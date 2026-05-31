@@ -25,11 +25,11 @@ const DEFAULTS: Settings = {
   asrEndpoint: 'http://192.168.1.9:6021',
   asrMode: 'local',
   localModel: 'Xenova/whisper-base',
-  ttsMode: 'local',
-  ttsEndpoint: 'https://api.openai.com/v1',
+  ttsMode: 'api',
+  ttsEndpoint: 'http://192.168.1.5:6022/v1',
   ttsApiKey: '',
   ttsModel: 'tts-1',
-  ttsVoice: 'alloy',
+  ttsVoice: 'vi',
 };
 
 export function loadSettings(): Settings {
