@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { isConfigured, loadSettings, ping, saveSettings, type Settings } from '../api';
+import { isConfigured, loadSettings, ping, saveSettings, TTS_ENGINES, type Settings, type TtsEngine } from '../api';
 
 export function SettingsPage() {
   const [s, setS] = useState<Settings>(() => loadSettings());
@@ -11,6 +11,18 @@ export function SettingsPage() {
     setS((prev) => ({ ...prev, ...patch }));
     setSaved(false);
     setTestState('idle');
+  }
+
+  // Switching engine preset fills endpoint/model/voice with that engine's defaults
+  // (user can still tweak them afterwards). 'custom' leaves current values.
+  function selectEngine(id: TtsEngine) {
+    const e = TTS_ENGINES.find((x) => x.id === id);
+    if (!e) return;
+    if (id === 'custom') {
+      update({ ttsEngine: id });
+      return;
+    }
+    update({ ttsEngine: id, ttsEndpoint: e.endpoint, ttsModel: e.model, ttsVoice: e.voice });
   }
 
   function save() {
@@ -114,13 +126,33 @@ export function SettingsPage() {
         {s.ttsMode === 'api' ? (
           <>
             <label className="form-field">
+              <span>Mô hình lồng tiếng (engine)</span>
+              <select value={s.ttsEngine} onChange={(e) => selectEngine(e.target.value as TtsEngine)}>
+                {TTS_ENGINES.map((e) => (
+                  <option key={e.id} value={e.id}>{e.label}</option>
+                ))}
+              </select>
+              {(() => {
+                const e = TTS_ENGINES.find((x) => x.id === s.ttsEngine);
+                if (!e) return null;
+                const strong = e.id === 'omni';
+                return (
+                  <div className={`engine-note ${strong ? 'warn' : ''}`}>
+                    <div><b>Chất lượng:</b> {e.quality}</div>
+                    <div><b>Yêu cầu:</b> {e.requirement}</div>
+                  </div>
+                );
+              })()}
+            </label>
+
+            <label className="form-field">
               <span>Endpoint TTS</span>
               <input
                 value={s.ttsEndpoint}
                 onChange={(e) => update({ ttsEndpoint: e.target.value })}
                 placeholder="https://api.openai.com/v1"
               />
-              <small>API tương thích OpenAI có endpoint /audio/speech. Mặc định nội bộ AI World: http://192.168.1.5:6022/v1 (Piper, offline, không cần key). Hoặc dùng https://api.openai.com/v1</small>
+              <small>Máy chủ tương thích OpenAI /audio/speech. Piper mặc định nội bộ: http://192.168.1.5:6022/v1 (offline, không cần key).</small>
             </label>
             <label className="form-field">
               <span>TTS API Key</span>

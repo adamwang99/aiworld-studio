@@ -10,11 +10,64 @@ export type Settings = {
   asrMode: 'local' | 'api'; // 'local' = on-device WASM Whisper, 'api' = ASR server
   localModel: 'Xenova/whisper-tiny' | 'Xenova/whisper-base' | 'Xenova/whisper-small';
   ttsMode: 'local' | 'api'; // 'local' = OS speech synthesis, 'api' = OpenAI-compatible /audio/speech
+  ttsEngine: TtsEngine; // which server engine preset is selected (only when ttsMode='api')
   ttsEndpoint: string; // base URL with /v1, e.g. https://api.openai.com/v1
   ttsApiKey: string;
   ttsModel: string; // e.g. tts-1, gpt-4o-mini-tts
   ttsVoice: string; // e.g. alloy, nova
 };
+
+// TTS engine presets. All speak the same OpenAI-compatible /audio/speech API
+// (we wrap each engine behind that contract), so switching is just endpoint +
+// voice + a hardware-requirement hint shown to the user.
+export type TtsEngine = 'piper' | 'vieneu' | 'omni' | 'custom';
+
+export const TTS_ENGINES: {
+  id: TtsEngine;
+  label: string;
+  endpoint: string;
+  model: string;
+  voice: string;
+  quality: string;
+  requirement: string;
+}[] = [
+  {
+    id: 'piper',
+    label: 'Piper (mặc định — nhẹ nhất)',
+    endpoint: 'http://192.168.1.5:6022/v1',
+    model: 'tts-1',
+    voice: 'vi',
+    quality: 'Giọng cơ bản, rõ ràng',
+    requirement: 'Chạy mọi máy. Nhẹ (~40MB RAM), nhanh hơn thời gian thực. Không cần GPU.',
+  },
+  {
+    id: 'vieneu',
+    label: 'VieNeu-TTS-v2 (giọng Việt tự nhiên)',
+    endpoint: 'http://192.168.1.5:6023/v1',
+    model: 'vieneu',
+    voice: 'vi',
+    quality: 'Giọng tiếng Việt tự nhiên, có voice cloning',
+    requirement: 'Khuyến nghị RAM ≥ 8GB. Trên CPU chậm (~2x thời gian audio); mượt nếu có GPU/Apple Silicon (Metal).',
+  },
+  {
+    id: 'omni',
+    label: 'OmniVoice (chất lượng cao nhất)',
+    endpoint: 'http://192.168.1.5:6024/v1',
+    model: 'omnivoice',
+    voice: 'female',
+    quality: 'Chất lượng cao nhất, voice design + cloning',
+    requirement: 'BẮT BUỘC GPU (NVIDIA CUDA / Apple Silicon M-series) + RAM ≥ 16GB. KHÔNG chạy thực dụng trên CPU thường.',
+  },
+  {
+    id: 'custom',
+    label: 'Tùy chỉnh (OpenAI, endpoint khác)',
+    endpoint: 'https://api.openai.com/v1',
+    model: 'tts-1',
+    voice: 'alloy',
+    quality: 'Tùy nhà cung cấp',
+    requirement: 'Bất kỳ máy chủ nào tương thích OpenAI /audio/speech. Cần mạng + API key nếu là dịch vụ trả phí.',
+  },
+];
 
 const KEY = 'aiworld.settings.v1';
 
@@ -26,6 +79,7 @@ const DEFAULTS: Settings = {
   asrMode: 'local',
   localModel: 'Xenova/whisper-base',
   ttsMode: 'api',
+  ttsEngine: 'piper',
   ttsEndpoint: 'http://192.168.1.5:6022/v1',
   ttsApiKey: '',
   ttsModel: 'tts-1',

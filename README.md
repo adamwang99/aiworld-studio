@@ -8,7 +8,7 @@
 
 **AI World Studio** là ứng dụng desktop hợp nhất để biến audio/video thô thành **văn bản, phụ đề, bản dịch và giọng nói lồng tiếng** trong một giao diện duy nhất — không phải ghép nhiều công cụ thủ công.
 
-Phiên bản hiện tại: `v0.1.2`.
+Phiên bản hiện tại: `v0.1.3`.
 
 Ứng dụng đóng gói native cho **macOS, Windows, Linux** qua Tauri (gói nhẹ, không phải Electron).
 
@@ -63,12 +63,15 @@ Dán văn bản, chọn ngôn ngữ đích, nhấn Dịch. Bản dịch hiển t
 
 ### 4. Lồng tiếng (Voice / TTS)
 
-Biến văn bản thành giọng nói tự nhiên, có hai chế độ:
+Biến văn bản thành giọng nói tự nhiên. Chọn được mô hình (engine) theo nhu cầu, mỗi mô hình có ghi chú yêu cầu phần cứng ngay trong Cài đặt:
 
-- **Máy chủ TTS nội bộ** (mặc định) — dùng Piper trên máy chủ AI World (`http://192.168.1.5:6022/v1`), có giọng tiếng Việt, offline 100%, không cần API key. Nghe trực tiếp và tải `.mp3`
-- **Trên máy** — dùng giọng đọc của hệ điều hành (Windows/macOS), chỉnh tốc độ + cao độ
+- **Piper** (mặc định) — nhẹ nhất (~40MB RAM), nhanh hơn thời gian thực, chạy mọi máy, không cần GPU. Có giọng tiếng Việt, offline.
+- **VieNeu-TTS-v2** — giọng tiếng Việt tự nhiên hơn, có voice cloning. Khuyến nghị RAM ≥ 8GB; trên CPU chậm hơn, mượt nếu có GPU/Apple Silicon.
+- **OmniVoice** — chất lượng cao nhất, voice design + cloning. **Bắt buộc GPU** (NVIDIA CUDA / Apple Silicon) + RAM ≥ 16GB; không chạy thực dụng trên CPU thường.
+- **Tùy chỉnh** — trỏ tới bất kỳ endpoint tương thích OpenAI `/audio/speech` (ví dụ OpenAI).
+- Hoặc **Trên máy** — dùng giọng đọc hệ điều hành (Windows/macOS).
 
-> Mặc định trỏ về máy chủ TTS nội bộ (giọng `vi`). Có thể đổi sang OpenAI hoặc endpoint khác trong Cài đặt.
+> Mặc định dùng Piper (máy chủ nội bộ, giọng `vi`). Đổi engine trong Cài đặt; ứng dụng sẽ hiển thị yêu cầu phần cứng để bạn biết máy có phù hợp không.
 
 ![Lồng tiếng](docs/images/05-voice.png)
 
@@ -99,20 +102,20 @@ Tải gói cài đặt cho hệ điều hành của bạn từ trang [Releases](
 
 | Hệ điều hành | File cài đặt |
 |---|---|
-| Linux (Debian/Ubuntu) | `AIWorldStudio_0.1.2_amd64.deb` |
-| Linux (Fedora/RHEL) | `AIWorldStudio_0.1.2_x86_64.rpm` |
-| Linux (portable) | `AIWorldStudio_0.1.2_amd64.AppImage` |
-| macOS (Apple Silicon) | `AIWorldStudio_0.1.2_aarch64.dmg` |
-| macOS (Intel) | `AIWorldStudio_0.1.2_x64_intel.dmg` |
-| Windows (installer) | `AIWorldStudio_0.1.2_x64-setup.exe` |
-| Windows (MSI) | `AIWorldStudio_0.1.2_x64_en-US.msi` |
+| Linux (Debian/Ubuntu) | `AIWorldStudio_0.1.3_amd64.deb` |
+| Linux (Fedora/RHEL) | `AIWorldStudio_0.1.3_x86_64.rpm` |
+| Linux (portable) | `AIWorldStudio_0.1.3_amd64.AppImage` |
+| macOS (Apple Silicon) | `AIWorldStudio_0.1.3_aarch64.dmg` |
+| macOS (Intel) | `AIWorldStudio_0.1.3_x64_intel.dmg` |
+| Windows (installer) | `AIWorldStudio_0.1.3_x64-setup.exe` |
+| Windows (MSI) | `AIWorldStudio_0.1.3_x64_en-US.msi` |
 
 Linux Debian/Ubuntu (luôn lấy bản mới nhất):
 
 ```bash
 # tải bản mới nhất (không cần ghi số phiên bản)
 curl -L -o AIWorldStudio.deb \
-  https://github.com/adamwang99/aiworld-studio/releases/latest/download/AIWorldStudio_0.1.2_amd64.deb
+  https://github.com/adamwang99/aiworld-studio/releases/latest/download/AIWorldStudio_0.1.3_amd64.deb
 sudo apt install ./AIWorldStudio.deb
 ```
 
