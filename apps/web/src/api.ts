@@ -9,6 +9,11 @@ export type Settings = {
   asrEndpoint: string; // transcription service, e.g. http://192.168.1.9:6021
   asrMode: 'local' | 'api'; // 'local' = on-device WASM Whisper, 'api' = ASR server
   localModel: 'Xenova/whisper-tiny' | 'Xenova/whisper-base' | 'Xenova/whisper-small';
+  ttsMode: 'local' | 'api'; // 'local' = OS speech synthesis, 'api' = OpenAI-compatible /audio/speech
+  ttsEndpoint: string; // base URL with /v1, e.g. https://api.openai.com/v1
+  ttsApiKey: string;
+  ttsModel: string; // e.g. tts-1, gpt-4o-mini-tts
+  ttsVoice: string; // e.g. alloy, nova
 };
 
 const KEY = 'aiworld.settings.v1';
@@ -20,6 +25,11 @@ const DEFAULTS: Settings = {
   asrEndpoint: 'http://192.168.1.9:6021',
   asrMode: 'local',
   localModel: 'Xenova/whisper-base',
+  ttsMode: 'local',
+  ttsEndpoint: 'https://api.openai.com/v1',
+  ttsApiKey: '',
+  ttsModel: 'tts-1',
+  ttsVoice: 'alloy',
 };
 
 export function loadSettings(): Settings {
@@ -161,4 +171,37 @@ export function buildSrt(segments: { start: number; end: number; text: string }[
   return segments
     .map((s, i) => `${i + 1}\n${ts(s.start)} --> ${ts(s.end)}\n${s.text.trim()}\n`)
     .join('\n');
+}
+
+// Synthesize speech via an OpenAI-compatible /audio/speech endpoint.
+// Returns the audio bytes (typically MP3) for playback and download.
+export async function synthesizeSpeech(
+  settings: Settings,
+  text: string,
+  signal?: AbortSignal,
+): Promise<{ bytes: Uint8Array; mime: string }> {
+  if (!settings.ttsEndpoint.trim()) {
+    throw new Error('Chưa cấu hình máy chủ lồng tiếng. Vào Cài đặt để nhập endpoint TTS.');
+  }
+  const url = joinUrl(settings.ttsEndpoint, 'audio/speech');
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (settings.ttsApiKey.trim()) headers.Authorization = `Bearer ${settings.ttsApiKey.trim()}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      model: settings.ttsModel || 'tts-1',
+      voice: settings.ttsVoice || 'alloy',
+      input: text,
+      response_format: 'mp3',
+    }),
+    signal,
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`Lỗi máy chủ lồng tiếng (${res.status}). ${body.slice(0, 200)}`);
+  }
+  const buf = await res.arrayBuffer();
+  const mime = res.headers.get('content-type') || 'audio/mpeg';
+  return { bytes: new Uint8Array(buf), mime };
 }

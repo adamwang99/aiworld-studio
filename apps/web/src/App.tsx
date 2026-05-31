@@ -5,6 +5,7 @@ import { TranscribePage } from './pages/TranscribePage';
 import { SubtitlePage } from './pages/SubtitlePage';
 import { VoicePage } from './pages/VoicePage';
 import { SettingsPage } from './pages/SettingsPage';
+import { LibraryPage } from './pages/LibraryPage';
 import { ComingSoon } from './pages/ComingSoon';
 
 const statusLabel: Record<ProjectStatus, string> = {
@@ -132,9 +133,9 @@ export function App() {
   else if (active === 'settings') body = <div className="content"><SettingsPage /></div>;
   else if (active === 'transcribe') body = <div className="content"><TranscribePage onNeedSettings={() => go('settings')} /></div>;
   else if (active === 'subtitle') body = <div className="content"><SubtitlePage onNeedSettings={() => go('settings')} /></div>;
-  else if (active === 'voice') body = <div className="content"><VoicePage /></div>;
+  else if (active === 'voice') body = <div className="content"><VoicePage onNeedSettings={() => go('settings')} /></div>;
   else if (active === 'projects') body = <div className="content"><ComingSoon title="Dự án" desc="Quản lý toàn bộ dự án media của bạn." /></div>;
-  else if (active === 'library') body = <div className="content"><ComingSoon title="Thư viện" desc="Kho file và kết quả đã xử lý." /></div>;
+  else if (active === 'library') body = <div className="content"><LibraryPage /></div>;
   else body = <HomePage go={go} />;
 
   return (

@@ -1,18 +1,30 @@
 import { useEffect, useRef, useState } from 'react';
+import { loadSettings, synthesizeSpeech } from '../api';
+import { saveBytesFile } from '../download';
 
-export function VoicePage() {
+export function VoicePage({ onNeedSettings }: { onNeedSettings: () => void }) {
   const [text, setText] = useState('');
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [voiceIdx, setVoiceIdx] = useState(0);
   const [rate, setRate] = useState(1);
   const [pitch, setPitch] = useState(1);
   const [speaking, setSpeaking] = useState(false);
-  const [supported, setSupported] = useState(true);
-  const utterRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const [osSupported, setOsSupported] = useState(true);
+  const [error, setError] = useState('');
+  const [progress, setProgress] = useState('');
+  const [audioUrl, setAudioUrl] = useState('');
+  const audioBytesRef = useRef<Uint8Array | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
+  // 'local' = OS speech synthesis (Web Speech API), 'api' = server TTS.
+  // Default follows saved settings, but auto-fall back to API when the OS
+  // webview (e.g. WebKitGTK on Linux) has no speechSynthesis.
+  const [mode, setMode] = useState<'local' | 'api'>(() => loadSettings().ttsMode);
 
   useEffect(() => {
     if (typeof window.speechSynthesis === 'undefined') {
-      setSupported(false);
+      setOsSupported(false);
+      setMode('api');
       return;
     }
     const load = () => {
@@ -24,7 +36,7 @@ export function VoicePage() {
     return () => { window.speechSynthesis.onvoiceschanged = null; };
   }, []);
 
-  function speak() {
+  function speakLocal() {
     if (!text.trim()) return;
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
@@ -33,14 +45,51 @@ export function VoicePage() {
     u.pitch = pitch;
     u.onend = () => setSpeaking(false);
     u.onerror = () => setSpeaking(false);
-    utterRef.current = u;
     setSpeaking(true);
     window.speechSynthesis.speak(u);
   }
 
-  function stop() {
+  function stopLocal() {
     window.speechSynthesis.cancel();
     setSpeaking(false);
+  }
+
+  async function speakApi() {
+    if (!text.trim()) return;
+    setError('');
+    setProgress('Đang tạo giọng nói...');
+    if (audioUrl) { URL.revokeObjectURL(audioUrl); setAudioUrl(''); }
+    const settings = loadSettings();
+    if (!settings.ttsEndpoint.trim()) {
+      setError('Chưa cấu hình máy chủ lồng tiếng. Mở Cài đặt để nhập endpoint TTS.');
+      setProgress('');
+      onNeedSettings();
+      return;
+    }
+    abortRef.current = new AbortController();
+    try {
+      const { bytes, mime } = await synthesizeSpeech(settings, text, abortRef.current.signal);
+      audioBytesRef.current = bytes;
+      const blob = new Blob([bytes as unknown as BlobPart], { type: mime });
+      const url = URL.createObjectURL(blob);
+      setAudioUrl(url);
+      // auto-play
+      const audio = new Audio(url);
+      audio.play().catch(() => { /* user can press play */ });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setProgress('');
+    }
+  }
+
+  async function downloadAudio() {
+    if (!audioBytesRef.current) return;
+    try {
+      await saveBytesFile(audioBytesRef.current, 'long-tieng.mp3', 'audio/mpeg');
+    } catch (e) {
+      setError('Không lưu được file: ' + (e instanceof Error ? e.message : String(e)));
+    }
   }
 
   // Prefer Vietnamese / English voices at top of list for relevance.
@@ -56,26 +105,45 @@ export function VoicePage() {
       <div className="page-head">
         <div>
           <h1>Lồng tiếng</h1>
-          <p>Biến văn bản thành giọng nói tự nhiên. Chạy ngay trên máy, không cần mạng.</p>
+          <p>Biến văn bản thành giọng nói tự nhiên. Chạy trên máy hoặc qua máy chủ TTS.</p>
         </div>
       </div>
 
       <section className="card pad">
-        {!supported ? (
-          <div className="alert error">Trình duyệt/ứng dụng này không hỗ trợ tổng hợp giọng nói.</div>
-        ) : (
-          <>
-            <div className="field-head">
-              <span className="field-label">Nội dung</span>
-              <span className="char-count">{text.length} ký tự</span>
-            </div>
-            <textarea
-              className="ta"
-              placeholder="Nhập văn bản cần đọc..."
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-            />
+        <div className="field-head">
+          <span className="field-label">Nội dung</span>
+          <span className="char-count">{text.length} ký tự</span>
+        </div>
+        <textarea
+          className="ta"
+          placeholder="Nhập văn bản cần đọc..."
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+        />
 
+        <div className="row gap" style={{ marginTop: 12 }}>
+          <label className="select-field">
+            <span>Chế độ</span>
+            <select
+              value={mode}
+              onChange={(e) => setMode(e.target.value as 'local' | 'api')}
+            >
+              <option value="local" disabled={!osSupported}>
+                Trên máy (giọng hệ điều hành){osSupported ? '' : ' — không khả dụng'}
+              </option>
+              <option value="api">Máy chủ TTS (OpenAI-compatible)</option>
+            </select>
+          </label>
+        </div>
+
+        {!osSupported && mode === 'local' ? (
+          <div className="alert error" style={{ marginTop: 12 }}>
+            Ứng dụng này (webview Linux) không có giọng đọc hệ điều hành. Chuyển sang "Máy chủ TTS" và cấu hình endpoint trong Cài đặt.
+          </div>
+        ) : null}
+
+        {mode === 'local' && osSupported ? (
+          <>
             <div className="voice-controls">
               <label className="select-field" style={{ width: '100%' }}>
                 <span>Giọng đọc ({voices.length})</span>
@@ -92,19 +160,37 @@ export function VoicePage() {
                 <input type="range" min="0" max="2" step="0.1" value={pitch} onChange={(e) => setPitch(Number(e.target.value))} />
               </div>
             </div>
-
             <div className="row gap">
               <div className="spacer" />
-              {speaking ? (
-                <button className="btn btn-ghost" onClick={stop}>Dừng</button>
-              ) : null}
-              <button className="btn btn-primary solid" onClick={speak} disabled={!text.trim()}>
+              {speaking ? <button className="btn btn-ghost" onClick={stopLocal}>Dừng</button> : null}
+              <button className="btn btn-primary solid" onClick={speakLocal} disabled={!text.trim()}>
                 {speaking ? 'Đang đọc...' : 'Đọc to'}
               </button>
             </div>
           </>
+        ) : (
+          <>
+            <div className="row gap">
+              <div className="spacer" />
+              <button className="btn btn-primary solid" onClick={speakApi} disabled={!text.trim() || progress !== ''}>
+                {progress ? 'Đang xử lý...' : 'Tạo giọng nói'}
+              </button>
+            </div>
+            {progress ? <div className="progress-note"><div className="dots"><span /><span /><span /></div>{progress}</div> : null}
+            {audioUrl ? (
+              <div className="card pad" style={{ marginTop: 12 }}>
+                <div className="field-head">
+                  <span className="field-label">Kết quả</span>
+                  <button className="link-btn" onClick={downloadAudio}>Tải .mp3</button>
+                </div>
+                <audio src={audioUrl} controls style={{ width: '100%', marginTop: 8 }} />
+              </div>
+            ) : null}
+          </>
         )}
       </section>
+
+      {error ? <div className="alert error">{error}</div> : null}
     </div>
   );
 }

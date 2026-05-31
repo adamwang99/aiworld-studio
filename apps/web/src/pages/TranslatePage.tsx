@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { LANGUAGES, loadSettings, translate } from '../api';
+import { addLibraryItem } from '../library';
 
 export function TranslatePage({ onNeedSettings }: { onNeedSettings: () => void }) {
   const [source, setSource] = useState('');
@@ -32,6 +33,14 @@ export function TranslatePage({ onNeedSettings }: { onNeedSettings: () => void }
     try {
       const out = await translate(settings, text, targetLabel, abortRef.current.signal);
       setResult(out);
+      if (out?.trim()) {
+        addLibraryItem({
+          kind: 'translate',
+          title: `Dịch sang ${targetLabel}: ` + text.slice(0, 40).replace(/\s+/g, ' '),
+          text: out,
+          meta: { target: targetLabel },
+        });
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {

@@ -1,5 +1,16 @@
 import { useRef, useState } from 'react';
 import { buildSrt, loadSettings, transcribe, type TranscriptResult } from '../api';
+import { saveTextFile } from '../download';
+import { addLibraryItem } from '../library';
+
+const SOURCE_LANGS = [
+  { code: '', label: 'Tự động nhận diện' },
+  { code: 'vi', label: 'Tiếng Việt' },
+  { code: 'en', label: 'English' },
+  { code: 'ko', label: '한국어' },
+  { code: 'ja', label: '日本語' },
+  { code: 'zh', label: '中文' },
+];
 
 function buildVtt(segments: { start: number; end: number; text: string }[]): string {
   const ts = (sec: number) => {
@@ -16,6 +27,7 @@ function buildVtt(segments: { start: number; end: number; text: string }[]): str
 
 export function SubtitlePage({ onNeedSettings }: { onNeedSettings: () => void }) {
   const [file, setFile] = useState<File | null>(null);
+  const [lang, setLang] = useState('');
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState('');
   const [error, setError] = useState('');
@@ -38,8 +50,17 @@ export function SubtitlePage({ onNeedSettings }: { onNeedSettings: () => void })
     setProgress('Đang tạo phụ đề...');
     abortRef.current = new AbortController();
     try {
-      const r = await transcribe(settings, file, null, setProgress, abortRef.current.signal);
+      const r = await transcribe(settings, file, lang || null, setProgress, abortRef.current.signal);
       setResult(r);
+      if (r.segments?.length) {
+        addLibraryItem({
+          kind: 'subtitle',
+          title: (file.name.replace(/\.[^.]+$/, '') || 'Phụ đề') + ' (phụ đề)',
+          srt: buildSrt(r.segments),
+          vtt: buildVtt(r.segments),
+          meta: { language: r.language, lines: r.segments.length },
+        });
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -48,15 +69,15 @@ export function SubtitlePage({ onNeedSettings }: { onNeedSettings: () => void })
     }
   }
 
-  function download(kind: 'srt' | 'vtt') {
+  async function download(kind: 'srt' | 'vtt') {
     if (!result) return;
     const content = kind === 'srt' ? buildSrt(result.segments) : buildVtt(result.segments);
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = (file?.name.replace(/\.[^.]+$/, '') || 'subtitle') + '.' + kind;
-    a.click();
-    URL.revokeObjectURL(a.href);
+    const name = (file?.name.replace(/\.[^.]+$/, '') || 'subtitle') + '.' + kind;
+    try {
+      await saveTextFile(content, name);
+    } catch (e) {
+      setError('Không lưu được file: ' + (e instanceof Error ? e.message : String(e)));
+    }
   }
 
   const ts = (sec: number) => {
@@ -94,6 +115,14 @@ export function SubtitlePage({ onNeedSettings }: { onNeedSettings: () => void })
         </div>
 
         <div className="row gap">
+          <label className="select-field">
+            <span>Ngôn ngữ giọng nói</span>
+            <select value={lang} onChange={(e) => setLang(e.target.value)}>
+              {SOURCE_LANGS.map((l) => (
+                <option key={l.code} value={l.code}>{l.label}</option>
+              ))}
+            </select>
+          </label>
           <div className="spacer" />
           {busy ? <button className="btn btn-ghost" onClick={() => abortRef.current?.abort()}>Hủy</button> : null}
           <button className="btn btn-primary solid" onClick={run} disabled={busy || !file}>

@@ -102,6 +102,56 @@ export function SettingsPage() {
           </label>
         )}
 
+        <label className="form-field">
+          <span>Chế độ lồng tiếng (text → speech)</span>
+          <select value={s.ttsMode} onChange={(e) => update({ ttsMode: e.target.value as Settings['ttsMode'] })}>
+            <option value="local">Trên máy (giọng hệ điều hành)</option>
+            <option value="api">Máy chủ TTS (OpenAI-compatible)</option>
+          </select>
+          <small>"Trên máy" dùng giọng đọc của Windows/macOS (Linux thường không có — dùng Máy chủ TTS).</small>
+        </label>
+
+        {s.ttsMode === 'api' ? (
+          <>
+            <label className="form-field">
+              <span>Endpoint TTS</span>
+              <input
+                value={s.ttsEndpoint}
+                onChange={(e) => update({ ttsEndpoint: e.target.value })}
+                placeholder="https://api.openai.com/v1"
+              />
+              <small>API tương thích OpenAI có endpoint /audio/speech. Ví dụ: https://api.openai.com/v1</small>
+            </label>
+            <label className="form-field">
+              <span>TTS API Key</span>
+              <input
+                type="password"
+                value={s.ttsApiKey}
+                onChange={(e) => update({ ttsApiKey: e.target.value })}
+                placeholder="Để trống nếu máy chủ không yêu cầu"
+              />
+            </label>
+            <div className="row gap">
+              <label className="form-field" style={{ flex: 1 }}>
+                <span>TTS Model</span>
+                <input
+                  value={s.ttsModel}
+                  onChange={(e) => update({ ttsModel: e.target.value })}
+                  placeholder="tts-1"
+                />
+              </label>
+              <label className="form-field" style={{ flex: 1 }}>
+                <span>Giọng (voice)</span>
+                <input
+                  value={s.ttsVoice}
+                  onChange={(e) => update({ ttsVoice: e.target.value })}
+                  placeholder="alloy"
+                />
+              </label>
+            </div>
+          </>
+        ) : null}
+
         <div className="row gap">
           <button className="btn btn-primary solid" onClick={save}>{saved ? 'Đã lưu ✓' : 'Lưu cài đặt'}</button>
           <button className="btn btn-ghost dark" onClick={test} disabled={!isConfigured(s) || testState === 'busy'}>

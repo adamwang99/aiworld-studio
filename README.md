@@ -8,7 +8,7 @@
 
 **AI World Studio** là ứng dụng desktop hợp nhất để biến audio/video thô thành **văn bản, phụ đề, bản dịch và giọng nói lồng tiếng** trong một giao diện duy nhất — không phải ghép nhiều công cụ thủ công.
 
-Phiên bản hiện tại: `v0.1.0`.
+Phiên bản hiện tại: `v0.1.1`.
 
 Ứng dụng đóng gói native cho **macOS, Windows, Linux** qua Tauri (gói nhẹ, không phải Electron).
 
@@ -47,6 +47,7 @@ Tải audio/video lên, nhận bản ghi chính xác kèm ngôn ngữ và thời
 Sinh phụ đề chuẩn timing cho video. Xuất `.srt` hoặc `.vtt` sẵn sàng dùng.
 
 - mỗi dòng phụ đề có mốc thời gian rõ ràng
+- chọn ngôn ngữ giọng nói (Tự động / Việt / English / 한국어 / 日本語 / 中文)
 - dùng chung engine ASR với chức năng Ghi âm (local hoặc API)
 
 ![Phụ đề](docs/images/03-subtitle.png)
@@ -62,10 +63,12 @@ Dán văn bản, chọn ngôn ngữ đích, nhấn Dịch. Bản dịch hiển t
 
 ### 4. Lồng tiếng (Voice / TTS)
 
-Biến văn bản thành giọng nói tự nhiên. Chạy **offline 100%** bằng Web Speech của hệ điều hành.
+Biến văn bản thành giọng nói tự nhiên, có hai chế độ:
 
-- chọn giọng đọc, điều chỉnh tốc độ (speed) và cao độ (pitch)
-- không gửi dữ liệu ra ngoài
+- **Trên máy** — dùng giọng đọc của hệ điều hành (Windows/macOS), chạy offline 100%, chỉnh tốc độ + cao độ
+- **Máy chủ TTS** — gọi endpoint tương thích OpenAI (`/audio/speech`) cho Linux hoặc khi cần giọng chất lượng cao; nghe trực tiếp và tải `.mp3`
+
+> Webview Linux không có giọng đọc hệ điều hành, nên trên Linux hãy dùng chế độ **Máy chủ TTS** (cấu hình trong Cài đặt).
 
 ![Lồng tiếng](docs/images/05-voice.png)
 
@@ -80,6 +83,14 @@ Kết nối tới bất kỳ máy chủ AI tương thích OpenAI và chọn ch�
 
 ![Cài đặt](docs/images/06-settings.png)
 
+### 6. Thư viện (Library)
+
+Mọi kết quả từ Ghi âm, Phụ đề và Dịch thuật tự động lưu vào Thư viện, **ngay trên máy** (không gửi lên máy chủ).
+
+- xem lại danh sách theo loại + thời gian
+- xuất lại `.txt` / `.srt` / `.vtt` bất cứ lúc nào
+- xóa từng mục hoặc xóa toàn bộ
+
 ## Bắt đầu nhanh — Hướng dẫn từng bước
 
 ### Bước 1 — Cài đặt ứng dụng
@@ -88,18 +99,21 @@ Tải gói cài đặt cho hệ điều hành của bạn từ trang [Releases](
 
 | Hệ điều hành | File cài đặt |
 |---|---|
-| Linux (Debian/Ubuntu) | `AIWorldStudio_0.1.0_amd64.deb` |
-| Linux (Fedora/RHEL) | `AIWorldStudio_0.1.0_x86_64.rpm` |
-| Linux (portable) | `AIWorldStudio_0.1.0_amd64.AppImage` |
-| macOS (Apple Silicon) | `AIWorldStudio_0.1.0_aarch64.dmg` |
-| macOS (Intel) | `AIWorldStudio_0.1.0_x64_intel.dmg` |
-| Windows (installer) | `AIWorldStudio_0.1.0_x64-setup.exe` |
-| Windows (MSI) | `AIWorldStudio_0.1.0_x64_en-US.msi` |
+| Linux (Debian/Ubuntu) | `AIWorldStudio_0.1.1_amd64.deb` |
+| Linux (Fedora/RHEL) | `AIWorldStudio_0.1.1_x86_64.rpm` |
+| Linux (portable) | `AIWorldStudio_0.1.1_amd64.AppImage` |
+| macOS (Apple Silicon) | `AIWorldStudio_0.1.1_aarch64.dmg` |
+| macOS (Intel) | `AIWorldStudio_0.1.1_x64_intel.dmg` |
+| Windows (installer) | `AIWorldStudio_0.1.1_x64-setup.exe` |
+| Windows (MSI) | `AIWorldStudio_0.1.1_x64_en-US.msi` |
 
-Linux Debian/Ubuntu:
+Linux Debian/Ubuntu (luôn lấy bản mới nhất):
 
 ```bash
-sudo apt install ./AIWorldStudio_0.1.0_amd64.deb
+# tải bản mới nhất (không cần ghi số phiên bản)
+curl -L -o AIWorldStudio.deb \
+  https://github.com/adamwang99/aiworld-studio/releases/latest/download/AIWorldStudio_0.1.1_amd64.deb
+sudo apt install ./AIWorldStudio.deb
 ```
 
 ### Bước 2 — Mở app và vào Cài đặt

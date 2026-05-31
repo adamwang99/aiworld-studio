@@ -173,6 +173,8 @@ button { cursor: pointer; border: none; background: none; }
 .section-head h2 { margin: 0; font-size: 19px; font-weight: 800; letter-spacing: -0.02em; }
 .link-btn { color: var(--accent2); font-weight: 700; font-size: 14px; background: none; }
 .link-btn:hover { color: #9cebff; }
+.link-btn.danger { color: #ff9b9b; }
+.link-btn.danger:hover { color: #ff6b6b; }
 
 /* Workflow cards */
 .workflow-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }

@@ -1,5 +1,7 @@
 import { useRef, useState } from 'react';
 import { buildSrt, loadSettings, transcribe, type TranscriptResult } from '../api';
+import { saveTextFile } from '../download';
+import { addLibraryItem } from '../library';
 
 const SOURCE_LANGS = [
   { code: '', label: 'Tự động nhận diện' },
@@ -46,6 +48,15 @@ export function TranscribePage({ onNeedSettings }: { onNeedSettings: () => void 
     try {
       const r = await transcribe(settings, file, lang || null, setProgress, abortRef.current.signal);
       setResult(r);
+      if (r.text?.trim()) {
+        addLibraryItem({
+          kind: 'transcribe',
+          title: file.name.replace(/\.[^.]+$/, '') || 'Bản ghi',
+          text: r.text,
+          srt: buildSrt(r.segments),
+          meta: { language: r.language, duration: Math.round(r.duration) },
+        });
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -54,15 +65,15 @@ export function TranscribePage({ onNeedSettings }: { onNeedSettings: () => void 
     }
   }
 
-  function download(kind: 'txt' | 'srt') {
+  async function download(kind: 'txt' | 'srt') {
     if (!result) return;
     const content = kind === 'srt' ? buildSrt(result.segments) : result.text;
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = (file?.name.replace(/\.[^.]+$/, '') || 'transcript') + '.' + kind;
-    a.click();
-    URL.revokeObjectURL(a.href);
+    const name = (file?.name.replace(/\.[^.]+$/, '') || 'transcript') + '.' + kind;
+    try {
+      await saveTextFile(content, name);
+    } catch (e) {
+      setError('Không lưu được file: ' + (e instanceof Error ? e.message : String(e)));
+    }
   }
 
   return (
