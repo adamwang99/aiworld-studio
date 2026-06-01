@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { navItems, projects, stats, workflows, type ProjectStatus } from './data';
+import { loadSettings, warmupTts } from './api';
 import { TranslatePage } from './pages/TranslatePage';
 import { TranscribePage } from './pages/TranscribePage';
 import { SubtitlePage } from './pages/SubtitlePage';
@@ -126,6 +127,13 @@ const allNav = [...navItems, { key: 'settings', label: 'Cài đặt' }];
 export function App() {
   const [active, setActive] = useState('home');
   const go = (key: string) => setActive(key);
+
+  // On app open: ask the selected Mac TTS server to start loading its model in
+  // the background, so it is ready by the time the user reaches "render voice".
+  // Best-effort; warmupTts never throws.
+  useEffect(() => {
+    void warmupTts(loadSettings());
+  }, []);
 
   let body;
   if (active === 'home') body = <HomePage go={go} />;

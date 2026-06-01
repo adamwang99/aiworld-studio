@@ -34,16 +34,16 @@ export const TTS_ENGINES: {
   {
     id: 'valtec',
     label: 'Valtec (mặc định — giọng Việt tự nhiên)',
-    endpoint: 'http://192.168.1.5:6025/v1',
+    endpoint: 'http://192.168.1.12:6025/v1',
     model: 'valtec',
     voice: 'vi',
     quality: 'Giọng tiếng Việt tự nhiên (VITS), 5 giọng Bắc/Nam nam-nữ',
-    requirement: 'Chạy trên máy chủ nội bộ (không tốn tài nguyên máy bạn). Gần thời gian thực, không cần GPU.',
+    requirement: 'Chạy trên máy chủ Mac M4 (nội bộ, không tốn tài nguyên máy bạn). Nạp khi dùng, gần thời gian thực.',
   },
   {
     id: 'piper',
     label: 'Piper (nhẹ + nhanh nhất)',
-    endpoint: 'http://192.168.1.5:6022/v1',
+    endpoint: 'http://192.168.1.12:6022/v1',
     model: 'tts-1',
     voice: 'vi',
     quality: 'Giọng cơ bản, rõ ràng — nhanh nhất',
@@ -52,11 +52,11 @@ export const TTS_ENGINES: {
   {
     id: 'vieneu',
     label: 'VieNeu-TTS-v2 (giọng tự nhiên + voice clone)',
-    endpoint: 'http://192.168.1.5:6023/v1',
+    endpoint: 'http://192.168.1.12:6023/v1',
     model: 'vieneu',
     voice: 'vi',
     quality: 'Giọng tiếng Việt tự nhiên, có voice cloning',
-    requirement: 'Khuyến nghị RAM ≥ 8GB. Trên CPU chậm (~2x thời gian audio); mượt nếu có GPU/Apple Silicon (Metal).',
+    requirement: 'Chạy trên máy chủ Mac M4 (Metal). Nạp khi dùng (~1 phút lần đầu), sau đó nhanh.',
   },
   {
     id: 'omni',
@@ -89,7 +89,7 @@ const DEFAULTS: Settings = {
   localModel: 'Xenova/whisper-base',
   ttsMode: 'api',
   ttsEngine: 'valtec',
-  ttsEndpoint: 'http://192.168.1.5:6025/v1',
+  ttsEndpoint: 'http://192.168.1.12:6025/v1',
   ttsApiKey: '',
   ttsModel: 'valtec',
   ttsVoice: 'vi',
@@ -267,4 +267,50 @@ export async function synthesizeSpeech(
   const buf = await res.arrayBuffer();
   const mime = res.headers.get('content-type') || 'audio/mpeg';
   return { bytes: new Uint8Array(buf), mime };
+}
+
+// --- TTS on-demand warmup -------------------------------------------------
+// The Mac M4 TTS servers are lazy-loaded: the daemon runs but the model is not
+// in memory until first use. We tell the server to start loading the model as
+// soon as the user opens the app / picks an engine, so by the time they hit
+// "render voice" (after transcribing/translating) the model is already ready.
+// warmup returns immediately; the model loads in the background on the server.
+
+export type TtsState = 'unloaded' | 'loading' | 'ready' | 'unknown';
+
+function ttsBaseRoot(ttsEndpoint: string): string {
+  // Strip a trailing /v1 (and any trailing slash) to reach /warmup, /status.
+  return ttsEndpoint.replace(/\/+$/, '').replace(/\/v1$/, '');
+}
+
+// Ask the selected TTS server to begin loading its model. Best-effort: never
+// throws (custom/OpenAI endpoints simply 404 these paths and we ignore it).
+export async function warmupTts(settings: Settings, signal?: AbortSignal): Promise<TtsState> {
+  if (settings.ttsMode !== 'api' || !settings.ttsEndpoint.trim()) return 'unknown';
+  // OpenAI/custom remote services do not implement /warmup; skip to avoid noise.
+  if (settings.ttsEngine === 'custom') return 'unknown';
+  const url = `${ttsBaseRoot(settings.ttsEndpoint)}/warmup`;
+  try {
+    const res = await fetch(url, { method: 'POST', signal });
+    if (!res.ok) return 'unknown';
+    const data = await res.json().catch(() => null);
+    return (data?.state as TtsState) || 'unknown';
+  } catch {
+    return 'unknown';
+  }
+}
+
+// Poll current model state on the selected TTS server. Best-effort.
+export async function ttsStatus(settings: Settings, signal?: AbortSignal): Promise<TtsState> {
+  if (settings.ttsMode !== 'api' || !settings.ttsEndpoint.trim()) return 'unknown';
+  if (settings.ttsEngine === 'custom') return 'unknown';
+  const url = `${ttsBaseRoot(settings.ttsEndpoint)}/status`;
+  try {
+    const res = await fetch(url, { method: 'GET', signal });
+    if (!res.ok) return 'unknown';
+    const data = await res.json().catch(() => null);
+    return (data?.state as TtsState) || 'unknown';
+  } catch {
+    return 'unknown';
+  }
 }

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { loadSettings, synthesizeSpeech } from '../api';
+import { loadSettings, synthesizeSpeech, warmupTts, ttsStatus, type TtsState } from '../api';
 import { saveBytesFile } from '../download';
 
 export function VoicePage({ onNeedSettings }: { onNeedSettings: () => void }) {
@@ -20,6 +20,33 @@ export function VoicePage({ onNeedSettings }: { onNeedSettings: () => void }) {
   // Default follows saved settings, but auto-fall back to API when the OS
   // webview (e.g. WebKitGTK on Linux) has no speechSynthesis.
   const [mode, setMode] = useState<'local' | 'api'>(() => loadSettings().ttsMode);
+  // Readiness of the selected Mac TTS engine (lazy-loaded on the server).
+  const [engineState, setEngineState] = useState<TtsState>('unknown');
+
+  // When the Voice page opens in API mode, tell the Mac server to start loading
+  // the selected engine's model now (the user still has to type/paste text),
+  // then poll until it reports ready so we can show a status badge.
+  useEffect(() => {
+    const settings = loadSettings();
+    if (settings.ttsMode !== 'api') return;
+    let stop = false;
+    const ctrl = new AbortController();
+    (async () => {
+      const st = await warmupTts(settings, ctrl.signal);
+      if (stop) return;
+      setEngineState(st);
+      if (st === 'ready' || st === 'unknown') return;
+      // Poll status until ready (cold start of OmniVoice/VieNeu can take ~80s).
+      for (let i = 0; i < 90 && !stop; i++) {
+        await new Promise((r) => setTimeout(r, 2000));
+        const cur = await ttsStatus(settings, ctrl.signal);
+        if (stop) return;
+        setEngineState(cur);
+        if (cur === 'ready' || cur === 'unknown') break;
+      }
+    })();
+    return () => { stop = true; ctrl.abort(); };
+  }, []);
 
   useEffect(() => {
     if (typeof window.speechSynthesis === 'undefined') {
@@ -170,6 +197,15 @@ export function VoicePage({ onNeedSettings }: { onNeedSettings: () => void }) {
           </>
         ) : (
           <>
+            {engineState !== 'unknown' ? (
+              <div className={`engine-status ${engineState}`} style={{ marginTop: 12, marginBottom: 4 }}>
+                {engineState === 'ready'
+                  ? '● Giọng đã sẵn sàng — tạo là có ngay.'
+                  : engineState === 'loading'
+                  ? '◌ Đang nạp giọng trên máy chủ... (có thể mất tới ~80 giây cho lần đầu, bạn cứ soạn nội dung trước)'
+                  : '○ Đang khởi động giọng...'}
+              </div>
+            ) : null}
             <div className="row gap">
               <div className="spacer" />
               <button className="btn btn-primary solid" onClick={speakApi} disabled={!text.trim() || progress !== ''}>

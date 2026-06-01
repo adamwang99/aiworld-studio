@@ -264,6 +264,9 @@ select option { background: #171a28; color: #f8fbff; }
 .engine-note b { color: var(--accent2); font-weight: 700; }
 .engine-note.warn { background: rgba(255, 180, 90, 0.10); border-color: rgba(255, 180, 90, 0.30); }
 .engine-note.warn b { color: #ffcf8a; }
+.engine-status { font-size: 12.5px; padding: 8px 12px; border-radius: 10px; line-height: 1.4; }
+.engine-status.ready { color: #7ee0a6; background: rgba(126, 224, 166, 0.10); border: 1px solid rgba(126, 224, 166, 0.25); }
+.engine-status.loading { color: #ffcf8a; background: rgba(255, 180, 90, 0.10); border: 1px solid rgba(255, 180, 90, 0.25); }
 
 /* Alerts */
 .alert { border-radius: 14px; padding: 12px 14px; font-size: 13.5px; line-height: 1.5; }

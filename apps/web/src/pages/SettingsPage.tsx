@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { isConfigured, loadSettings, ping, saveSettings, TTS_ENGINES, type Settings, type TtsEngine } from '../api';
+import { isConfigured, loadSettings, ping, saveSettings, warmupTts, TTS_ENGINES, type Settings, type TtsEngine } from '../api';
 
 export function SettingsPage() {
   const [s, setS] = useState<Settings>(() => loadSettings());
@@ -22,7 +22,11 @@ export function SettingsPage() {
       update({ ttsEngine: id });
       return;
     }
-    update({ ttsEngine: id, ttsEndpoint: e.endpoint, ttsModel: e.model, ttsVoice: e.voice });
+    const next = { ttsEngine: id, ttsEndpoint: e.endpoint, ttsModel: e.model, ttsVoice: e.voice };
+    update(next);
+    // Pre-load the newly selected engine's model on the Mac server in the
+    // background, so it is ready when the user renders voice. Best-effort.
+    void warmupTts({ ...s, ...next });
   }
 
   function save() {
